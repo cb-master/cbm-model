@@ -1,0 +1,19 @@
+{
+    "name": "cbm/cbm-model",
+    "description": "A database model for cloud bill master application use.",
+    "type": "composer-plugin",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "CBM\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Showket Ahmed",
+            "email": "riyadhtayf@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}
