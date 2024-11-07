@@ -1,5 +1,5 @@
 {
-    "name": "cbm-ltd/cbm-model",
+    "name": "cloud-bill-master/cbm-model",
     "description": "A database model for cloud bill master application use.",
     "type": "composer-plugin",
     "license": "MIT",
