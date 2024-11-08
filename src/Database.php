@@ -180,4 +180,13 @@ class Database
         $this->table = '';
         $this->offset = 0;
     }
+
+    public function __debugInfo()
+    {
+        return [
+            'db-user' =>    'protected',
+            'db-name' =>    'protected',
+            'db-password' =>    'protected',
+        ];
+    }
 }
