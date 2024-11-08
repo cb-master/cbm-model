@@ -1,5 +1,5 @@
 {
-    "name": "cloud-bill-master/cbm-model",
+    "name": "cb-master/cb-model",
     "description": "A database model for cloud bill master application use.",
     "type": "package",
     "license": "MIT",
