@@ -194,7 +194,6 @@ class Model extends Database
             if(!$stmt->execute(array_values($data))){
                 throw new ModelExceptions("SQL Param Error: {$this->sql}", 85007);
             }
-            $stmt->execute($this->params);
         }catch(ModelExceptions $e){
             echo $e->message();
         }
