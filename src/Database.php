@@ -20,6 +20,9 @@ use PDOException;
 defined('ROOTPATH') || define('ROOTPATH', __DIR__.'/../..');
 $path = ROOTPATH . "/Config/Config.php";
 if(!file_exists($path)){
+    if(!file_exists(ROOTPATH . "/Config")){
+        mkdir(ROOTPATH . "/Config", 0750);
+    }
     $str = "<?php
 /**
  * APP Name:        Laika DB Model
