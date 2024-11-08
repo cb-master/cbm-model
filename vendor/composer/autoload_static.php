@@ -9,14 +9,19 @@ class ComposerStaticInita42e6cd1981efd1ea348090d14576a46
     public static $prefixLengthsPsr4 = array (
         'C' => 
         array (
-            'CBM\\Resource\\' => 13,
+            'CBM\\Model\\' => 10,
+            'CBM\\ModelHelper\\' => 16,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'CBM\\Resource\\' => 
+        'CBM\\Model\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',
+        ),
+        'CBM\\ModelHelper\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/helper',
         ),
     );
 

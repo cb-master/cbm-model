@@ -1,19 +1,19 @@
 <?php return array(
     'root' => array(
-        'name' => 'cloud-bill-master/cbm-model',
+        'name' => 'cb-master/cb-model',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '3f5a2d21a1a0333a69dd72496db4caa377f2c078',
+        'reference' => 'bae03ef8a1b8efa560f9628fdeaf1cb7fdaf1289',
         'type' => 'package',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
         'dev' => true,
     ),
     'versions' => array(
-        'cloud-bill-master/cbm-model' => array(
+        'cb-master/cb-model' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '3f5a2d21a1a0333a69dd72496db4caa377f2c078',
+            'reference' => 'bae03ef8a1b8efa560f9628fdeaf1cb7fdaf1289',
             'type' => 'package',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

@@ -6,5 +6,6 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'CBM\\Resource\\' => array($baseDir . '/src'),
+    'CBM\\Model\\' => array($baseDir . '/src'),
+    'CBM\\ModelHelper\\' => array($baseDir . '/helper'),
 );

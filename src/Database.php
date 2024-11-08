@@ -9,22 +9,21 @@
  */
 
 // Namespace
-namespace CBM\Resource;
+namespace CBM\Model;
 
 // Forbidden Access
 defined('ROOTPATH') || http_response_code(403).die('403 Forbidden Access!');
 
-use Exception;
 use PDO;
 use PDOException;
+use CBM\ModelHelper\Resource;
 
 $path = ROOTPATH . "/Config/Config.php";
 if(!file_exists($path)){
     if(!file_exists(ROOTPATH . "/Config")){
         mkdir(ROOTPATH . "/Config", 0750);
     }
-    require_once(__DIR__."/../resources/functions.php");
-    file_put_contents($path, config_resources());
+    file_put_contents($path, Resource::config_resources());
 }
 
 require_once($path);
@@ -89,6 +88,9 @@ class Database
     // Parameters
     protected $params = [];
 
+    // SQL Command
+    protected $sql = '';
+
     // Database Drivers
     private Array $drivers = [
         'dblib'     =>   10060, // Microsoft SQL Server
@@ -98,14 +100,16 @@ class Database
     ];
 
     // Initiate Database
-    public function __construct(){
+    public function __construct($fetch = 'object'){
         // Get Resources
         $this->resource();
+        $default_fetch = ($fetch != 'assoc') ? PDO::FETCH_OBJ : PDO::FETCH_ASSOC;
         try{
             $this->pdo = ($this->driver == 'sqlite') ? new PDO($this->dsn()) : new PDO($this->dsn(), $this->user, $this->password);
 
-            $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
+            $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, $default_fetch);
             $this->pdo->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, false);
+
         }catch(PDOException $e){
             exit('<body style="margin:0;"><div style="height:100vh;position:relative;"><h1 style="text-align:center;color:#ef3a3a; position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);margin:0;">Connection Error!<br>['.$e->getCode().'] - '.$e->getMessage().'</h1></div></body>');
         }
@@ -179,14 +183,13 @@ class Database
         $this->operator = '';
         $this->table = '';
         $this->offset = 0;
+        $this->sql = '';
     }
 
     public function __debugInfo()
     {
         return [
-            'db-user' =>    'protected',
-            'db-name' =>    'protected',
-            'db-password' =>    'protected',
+            'db-info'       =>  'Sorry This is Protected. Please Follow The Documentation.'
         ];
     }
 }
