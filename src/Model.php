@@ -176,7 +176,7 @@ class Model extends Database
         
         // Reset Values
         $this->reset();
-        return $result;
+        return $result ?: [];
     }
 
     // Insert Into Database
