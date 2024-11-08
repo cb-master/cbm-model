@@ -1,15 +1,12 @@
 {
     "name": "cloud-bill-master/cbm-model",
     "description": "A database model for cloud bill master application use.",
-    "type": "composer-plugin",
+    "type": "package",
     "license": "MIT",
     "autoload": {
         "psr-4": {
             "CBM\\Resource\\": "src/"
         }
-    },
-    "extra": {
-        "class": "CBM\\Resource"
     },
     "authors": [
         {
