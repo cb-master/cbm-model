@@ -3,7 +3,7 @@
         'name' => 'cloud-bill-master/cbm-model',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'bfee60db7459ff9fa169ae6c07ce812e10c8663c',
+        'reference' => 'b1dc77b83875f30518846c15a0f488ed1471d36d',
         'type' => 'composer-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'cloud-bill-master/cbm-model' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'bfee60db7459ff9fa169ae6c07ce812e10c8663c',
+            'reference' => 'b1dc77b83875f30518846c15a0f488ed1471d36d',
             'type' => 'composer-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

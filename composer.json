@@ -8,6 +8,9 @@
             "CBM\\Resource\\": "src/"
         }
     },
+    "extra": {
+        "class": "CBM\\Resource"
+    },
     "authors": [
         {
             "name": "Showket Ahmed",
