@@ -16,8 +16,11 @@ use Exception;
 use PDO;
 use PDOException;
 
-// Require Config Path
-defined('ROOTPATH') || define('ROOTPATH', __DIR__.'/../..');
+// Check Defiuned ROOTPATH
+if(!defined('ROOTPATH')){
+    throw new Exception("Please Define ROOTPATH in Application root directory.", 8000);
+}
+
 $path = ROOTPATH . "/Config/Config.php";
 if(!file_exists($path)){
     if(!file_exists(ROOTPATH . "/Config")){
@@ -33,10 +36,9 @@ if(!file_exists($path)){
  * APP Company:     Cloud Bill Master Ltd.
  */";
     file_put_contents($path, $str);
-    require_once($path);
-}else{
-    throw new Exception("Please Define ROOTPATH in Application root directory.", 8000);
 }
+
+require_once($path);
 
 class Database
 {
