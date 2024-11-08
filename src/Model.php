@@ -24,7 +24,6 @@ class Model extends Database
     // Set Table
     public function table(string $table):object
     {
-        $table = parent::setTable($table);
         $this->table = $table;
         return $this;
     }
@@ -39,7 +38,6 @@ class Model extends Database
     // Set Join
     public function join(string $table, string $condition, string $type = 'LEFT'):object
     {
-        $table = parent::setTable($table);
         $type = strtoupper($type);
         $this->join[] = "{$type} JOIN {$table} ON {$condition}";
         return $this;

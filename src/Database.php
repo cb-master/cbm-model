@@ -11,31 +11,20 @@
 // Namespace
 namespace CBM\Resource;
 
+// Forbidden Access
+defined('ROOTPATH') || http_response_code(403).die('403 Forbidden Access!');
 
 use Exception;
 use PDO;
 use PDOException;
-
-// Check Defiuned ROOTPATH
-if(!defined('ROOTPATH')){
-    throw new Exception("Please Define ROOTPATH in Application root directory.", 8000);
-}
 
 $path = ROOTPATH . "/Config/Config.php";
 if(!file_exists($path)){
     if(!file_exists(ROOTPATH . "/Config")){
         mkdir(ROOTPATH . "/Config", 0750);
     }
-    $str = "<?php
-/**
- * APP Name:        Laika DB Model
- * APP Provider:    Showket Ahmed
- * APP Link:        https://cloudbillmaster.com
- * APP Contact:     riyadtayf@gmail.com
- * APP Version:     1.0.0
- * APP Company:     Cloud Bill Master Ltd.
- */";
-    file_put_contents($path, $str);
+    require_once(__DIR__."/../resources/functions.php");
+    file_put_contents($path, config_resources());
 }
 
 require_once($path);
@@ -118,7 +107,7 @@ class Database
             $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
             $this->pdo->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, false);
         }catch(PDOException $e){
-            exit('<body style="margin:0;"><div style="height:100vh;position:relative;"><h1 style="text-align:center;color:#ef3a3a; position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);margin:0;">['.$e->getCode().'] - '.$e->getMessage().'</h1></div></body>');
+            exit('<body style="margin:0;"><div style="height:100vh;position:relative;"><h1 style="text-align:center;color:#ef3a3a; position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);margin:0;">Connection Error!<br>['.$e->getCode().'] - '.$e->getMessage().'</h1></div></body>');
         }
     }
 
@@ -190,17 +179,5 @@ class Database
         $this->operator = '';
         $this->table = '';
         $this->offset = 0;
-    }
-
-    // Make Table Name
-    protected function setTable(string $table):string
-    {
-        $table = strtolower($table);
-        $pfx = strtolower(TABLEPFX);
-        if(strpos($table, $pfx) === false)
-        {
-            $this->table = $pfx.$table;
-        }
-        return $table;
     }
 }
