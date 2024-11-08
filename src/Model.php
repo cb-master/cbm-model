@@ -137,7 +137,7 @@ class Model extends Database
     }
 
     // Execute Database For Single Value
-    public function single():array
+    public function single():object|array
     {
         $this->sql = "SELECT {$this->select} FROM {$this->table}";
 
