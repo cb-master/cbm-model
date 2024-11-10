@@ -88,7 +88,7 @@ class Database
     protected $order = '';
 
     // Limit
-    protected $limit = '';
+    protected $limit = 0;
 
     // Parameters
     protected $params = [];

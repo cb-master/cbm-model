@@ -85,12 +85,13 @@ class Model extends Database
     public function limit(Int|Null $limit = NULL):object
     {
         $limit = (Int) ($limit ?: LIMIT);
-        $pagenumber = (int) $_GET('page') + 1;
+
+        $pagenumber = (int) ($_GET['page'] ?? 0) + 1;
         // Get Limit
         $limit = (int) $limit;
         
         // Set Offset
-        $this->offset = ($pagenumber > 0) ? (($pagenumber - 1) * $limit) : 0;
+        $this->offset = ($pagenumber > 0 ) ? (($pagenumber - 1) * $limit) : 0;
 
         // Set Query
         $this->limit = "LIMIT {$limit} OFFSET {$this->offset}";
