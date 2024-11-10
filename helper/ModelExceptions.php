@@ -11,8 +11,10 @@
 // Namespace
 namespace CBM\ModelHelper;
 
+// Forbidden Access
+defined('ROOTPATH') || http_response_code(403).die('403 Forbidden Access!');
+
 use Exception;
-use PDOException;
 
 // Forbidden Access
 defined('ROOTPATH') || http_response_code(403).die('403 Forbidden Access!');
@@ -22,6 +24,6 @@ final class ModelExceptions extends Exception
     // Exception Message
     public function message():string
     {
-        return "[".$this->getCode() . "] - " . $this->getMessage() . "... Line: " . $this->getLine();
+        return "[".$this->getCode() . "] - " . $this->getMessage() . "... Line: " . $this->getLine() . ":" . $this->getLine();
     }
 }

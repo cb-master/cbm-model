@@ -15,8 +15,10 @@ namespace CBM\Model;
 defined('ROOTPATH') || http_response_code(403).die('403 Forbidden Access!');
 
 use PDO;
+use Exception;
 use PDOException;
 use CBM\ModelHelper\Resource;
+use CBM\ModelHelper\PDOModelExceptions;
 
 $path = ROOTPATH . "/Config/Config.php";
 if(!file_exists($path)){
@@ -76,6 +78,9 @@ class Database
     // Filter
     protected $filter = [];
 
+    // Compare
+    protected $compare = '';
+
     // Operator
     protected $operator = '';
 
@@ -92,7 +97,7 @@ class Database
     protected $sql = '';
 
     // Database Drivers
-    private Array $drivers = [
+    private Array $ports = [
         'dblib'     =>   10060, // Microsoft SQL Server
         'mysql'     =>   3306, // Mysql Server
         'pgsql'     =>   5432, // Postgres Server
@@ -100,9 +105,12 @@ class Database
     ];
 
     // Initiate Database
-    public function __construct($fetch = 'object'){
+    public function __construct(string $fetch = 'object')
+    {
         // Get Resources
         $this->resource();
+
+        // Get Fetch Method
         $default_fetch = ($fetch != 'assoc') ? PDO::FETCH_OBJ : PDO::FETCH_ASSOC;
         try{
             $this->pdo = ($this->driver == 'sqlite') ? new PDO($this->dsn()) : new PDO($this->dsn(), $this->user, $this->password);
@@ -118,30 +126,38 @@ class Database
     // Get Resources
     private function resource()
     {
-        // Get Host
-        if(!defined('DB_HOST')){
-            throw new PDOException("Database Host Error!", 85001);
-        }
-        // Get Driver
-        if(!defined('DB_DRIVER')){
-            throw new PDOException("Database Driver Error!", 85002);
-        }
-        // Get Name
-        if(!defined('DB_NAME')){
-            throw new PDOException("Database Name Error!", 85003);
-        }
-        // Get Username
-        if(!defined('DB_USER')){
-            throw new PDOException("Database User Error!", 85004);
-        }
-        // Get Password
-        if(!defined('DB_PASSWORD')){
-            throw new PDOException("Database Password Error!", 85005);
+        try {
+            // Get Host
+            if(!defined('DB_HOST')){
+                throw new PDOModelExceptions("Database Host Error!", 85001);
+            }
+
+            // Get Driver
+            if(!defined('DB_DRIVER')){
+                throw new PDOModelExceptions("Database Driver Error!", 85002);
+            }
+
+            // Get Name
+            if(!defined('DB_NAME')){
+                throw new PDOModelExceptions("Database Name Error!", 85003);
+            }
+
+            // Get Username
+            if(!defined('DB_USER')){
+                throw new PDOModelExceptions("Database User Error!", 85004);
+            }
+
+            // Get Password
+            if(!defined('DB_PASSWORD')){
+                throw new PDOModelExceptions("Database Password Error!", 85005);
+            }
+        }catch(PDOModelExceptions $e){
+            echo $e->message();
         }
 
         $this->host = DB_HOST;
         $this->driver = strtolower(DB_DRIVER);
-        $this->port = defined('DB_PORT') ? DB_PORT : $this->drivers[$this->driver];
+        $this->port = defined('DB_PORT') ? DB_PORT : $this->ports[$this->driver];
         $this->name = defined('DB_NAME') ? DB_NAME : '';
         $this->user = defined('DB_USER') ? DB_USER : '';
         $this->password = defined('DB_PASSWORD') ? DB_PASSWORD : '';
@@ -161,11 +177,11 @@ class Database
     }
 
     // Connection
-    protected static function conn():Null|Object
+    protected static function conn(string $fetch = 'object'):Null|Object
     {
         if(!self::$instance)
         {
-            self::$instance = new static;
+            self::$instance = new static($fetch);
         }
         return self::$instance;
     }
@@ -180,6 +196,7 @@ class Database
         $this->select = '*';
         $this->order = '';
         $this->limit = '';
+        $this->compare = '';
         $this->operator = '';
         $this->table = '';
         $this->offset = 0;

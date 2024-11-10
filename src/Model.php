@@ -11,6 +11,10 @@
 // Namespace
 namespace CBM\Model;
 
+// Forbidden Access
+defined('ROOTPATH') || http_response_code(403).die('403 Forbidden Access!');
+
+use PDOException;
 use CBM\ModelHelper\ModelExceptions;
 
 class Model extends Database
@@ -22,9 +26,9 @@ class Model extends Database
     public const ASSOC = 'assoc';
 
     // Get Connection
-    public static function conn():Null|Object
+    public static function conn(string $fetch = 'object'):Null|Object
     {
-        return parent::conn();
+        return parent::conn($fetch);
     }
 
     // Set Table
@@ -60,9 +64,10 @@ class Model extends Database
     // Set Where
     public function where(array $where, string $compare = '=', string $operator = 'AND'):object // $operator = AND / OR / && / ||
     {
-        $this->$operator = $operator;
+        $this->operator = $operator;
+        $this->compare = $compare;
         foreach($where as $key=>$value){
-            $this->where[] = "{$key} {$compare} ?";
+            $this->where[] = "{$key} {$this->compare} ?";
             $this->params[] = $value;
         }
         return $this;
@@ -111,28 +116,33 @@ class Model extends Database
         }
         
         if (!empty($this->order)) {
-            $this->sql .= ' ' . $this->order;
+            $this->sql .= " {$this->order}";
         }
 
         if (!empty($this->limit)) {
-            $this->sql .= ' ' . $this->limit;
+            $this->sql .= " {$this->limit}";
         }
+
         try{
+            // Prepare Statement
             if(!($stmt = $this->pdo->prepare($this->sql))){
-                throw new ModelExceptions("SQL Error: {$this->sql}", 85006);
+                throw new PDOException("SQL Error: {$this->sql}", 85006);
             }
+
+            // Execute Statement
             if(!$stmt->execute($this->params)){
-                throw new ModelExceptions("SQL Param Error: {$this->sql}", 85007);
+                throw new PDOException("SQL Param Error: {$this->sql}", 85007);
             }
-            $stmt->execute($this->params);
+
+            // Fetch Data
             $result = $stmt->fetchAll();
-        }catch(ModelExceptions $e){
-            echo $e->message();
+        }catch(PDOException $e){
+            echo "[".$e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
         }
 
-        // Reset Values
+        // Reset Statemment Helpers
         $this->reset();
-
+        // Return
         return $result;
     }
 
@@ -154,28 +164,33 @@ class Model extends Database
         }
 
         if (!empty($this->order)) {
-            $this->sql .= ' ' . $this->order;
+            $this->sql .= " {$this->order}";
         }
 
         if (!empty($this->limit)) {
-            $this->sql .= ' ' . $this->limit;
+            $this->sql .= " {$this->limit}";
+        }
+                
+        try{
+            // Prepare Statement
+            if(!($stmt = $this->pdo->prepare($this->sql))){
+                throw new PDOException("SQL Error: {$this->sql}", 85006);
+            }
+
+            // Execute Statement
+            if(!$stmt->execute($this->params)){
+                throw new PDOException("SQL Param Error: {$this->sql}", 85007);
+            }            
+        }catch(PDOException $e){
+            echo "[".$e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
         }
 
-        try{
-            if(!($stmt = $this->pdo->prepare($this->sql))){
-                throw new ModelExceptions("SQL Error: {$this->sql}", 85006);
-            }
-            if(!$stmt->execute($this->params)){
-                throw new ModelExceptions("SQL Param Error: {$this->sql}", 85007);
-            }
-            $stmt->execute($this->params);
-            $result = $stmt->fetch();
-        }catch(ModelExceptions $e){
-            echo $e->message();
-        }
+        // Fetch Data
+        $result = $stmt->fetch();
         
-        // Reset Values
+        // Reset Statemment Helpers
         $this->reset();
+        // Return
         return $result ?: [];
     }
 
@@ -183,24 +198,29 @@ class Model extends Database
     public function insert(array $data):int
     {
         $columns = implode(', ', array_keys($data));
+
         $placeholders = implode(', ', array_fill(0, count($data), '?'));
 
         $this->sql = "INSERT INTO {$this->table} ($columns) VALUES ($placeholders)";
 
         try{
+            // Prepare Statement
             if(!($stmt = $this->pdo->prepare($this->sql))){
-                throw new ModelExceptions("SQL Error: {$this->sql}", 85006);
+                throw new PDOException("SQL Error: {$this->sql}", 85006);
             }
+
+            // Execute Statement
             if(!$stmt->execute(array_values($data))){
-                throw new ModelExceptions("SQL Param Error: {$this->sql}", 85007);
+                throw new PDOException("SQL Param Error: {$this->sql}", 85007);
             }
-        }catch(ModelExceptions $e){
-            echo $e->message();
+        }catch(PDOException $e){
+            echo "[".$e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
         }
 
-        // Reset Values
+        // Reset Statemment Helpers
         $this->reset();
-        return (int) $this->pdo->lastInsertId(); // Returns the ID of the last inserted row
+        // Return
+        return (int) $this->pdo->lastInsertId();
     }
 
     // Replace Data
@@ -209,78 +229,120 @@ class Model extends Database
         $columns = implode(', ', array_keys($data));
         $placeholders = implode(', ', array_fill(0, count($data), '?'));
 
-        $result = 0;
-
         $this->sql = "REPLACE INTO {$this->table} ($columns) VALUES ($placeholders)";
         try{
+            // Prepare Statement
             if(!($stmt = $this->pdo->prepare($this->sql))){
-                throw new ModelExceptions("SQL Error: {$this->sql}", 85006);
+                throw new PDOException("SQL Error: {$this->sql}", 85006);
             }
+
+            // Execute Statement
             if(!$stmt->execute(array_values($data))){
-                throw new ModelExceptions("SQL Param Error: {$this->sql}", 85007);
+                throw new PDOException("SQL Param Error: {$this->sql}", 85007);
             }
-            $result = (int) $stmt->rowCount();
-        }catch(ModelExceptions $e){}
-        // Reset Values
+        }catch(PDOException $e){
+            echo "[".$e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
+        }
+
+        // Reset Statemment Helpers
         $this->reset();
-        return $result; // Returns the ID of the last inserted row
+        // Return
+        return $this->pdo->lastInsertId();
     }
 
     // Update Data Into Table
     public function update(array $data):int
     {
+        // Get Params
         $result = 0;
         $set = [];
         foreach ($data as $column => $value) {
             $set[] = "$column = ?";
             $params[] = $value;
         }
+
+        // Get Params
         $toUpdate = array_merge($params, $this->params);
-
-        $this->sql = "UPDATE {$this->table} SET " . implode(', ', $set);
-
-        if (!empty($this->where)) {
-            $this->sql .= ' WHERE ' . implode(" {$this->operator} ", $this->where);
-
-            try{
-                if(!($stmt = $this->pdo->prepare($this->sql))){
-                    throw new ModelExceptions("SQL Error: {$this->sql}", 85006);
+        
+        try {
+            // SQL Statement
+            $this->sql = "UPDATE {$this->table} SET " . implode(', ', $set);
+            // Check Where Statement
+            if ($this->where || $this->filter){
+                if($this->where){
+                    $this->sql .= ' WHERE ' . implode(" {$this->operator} ", $this->where);
+                }elseif($this->filter){
+                    $this->sql .= ' WHERE ' . implode(" {$this->operator} ", $this->filter);
                 }
-                if(!$stmt->execute($toUpdate)){
-                    throw new ModelExceptions("SQL Param Error: {$this->sql}", 85007);
+    
+                try{
+                    // Prepare Statement
+                    if(!($stmt = $this->pdo->prepare($this->sql))){
+                        throw new PDOException("SQL Error: {$this->sql}", 85006);
+                    }
+    
+                    // Execute Statement
+                    if(!$stmt->execute($toUpdate)){
+                        throw new PDOException("SQL Param Error: {$this->sql}", 85007);
+                    }
+                    $result = (int) $stmt->rowCount();
+                }catch(PDOException $e){
+                    echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
                 }
-                $result = $stmt->rowCount();
-            }catch(ModelExceptions $e){
-                echo $e->message();
+            }else{
+                throw new PDOException("Where Clause Not Found: {$this->sql}", 85006);
             }
+        }catch(PDOException $e) {
+            echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
         }
-        // Reset Values
+        // Reset Statemment Helpers
         $this->reset();
-        return (int) ($result ?? 0);
+        // Return
+        return $result;
     }
 
     // Delete Column
-    public function pop():int
+    public function pop()
     {
         $result = 0;
-        $this->sql = "DELETE FROM {$this->table}";
-        if (!empty($this->where)) {
-            $this->sql .= ' WHERE ' . implode(" {$this->operator} ", $this->where);
-            try{
-                if(!($stmt = $this->pdo->prepare($this->sql))){
-                    throw new ModelExceptions("SQL Error: {$this->sql}", 85006);
+        
+        try {
+            // SQL Statement
+            $this->sql = "DELETE FROM {$this->table}";
+            // Check Where Statement
+            if($this->where || $this->filter){
+                if($this->where){
+                    $this->sql .= ' WHERE ' . implode(" {$this->operator} ", $this->where);
+                }elseif($this->filter){
+                    $this->sql .= ' WHERE ' . implode(" {$this->operator} ", $this->filter);
                 }
-                if(!$stmt->execute($this->params)){
-                    throw new ModelExceptions("SQL Param Error: {$this->sql}", 85007);
+                
+                try{
+                    // Prepare Statement
+                    if(!($stmt = $this->pdo->prepare($this->sql))){
+                        throw new PDOException("SQL Error: {$this->sql}", 85006);
+                    }
+        
+                    // Execute Statement
+                    if(!$stmt->execute($this->params)){
+                        throw new PDOException("SQL Param Error: {$this->sql}", 85007);
+                    }
+                    $result = (int) $stmt->rowCount();
+                }catch(PDOException $e){
+                    echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
                 }
-                $result = (int) $stmt->rowCount();
-            }catch(ModelExceptions $e){
-                echo $e->message();
+            }else{
+                throw new PDOException("Where Clause Not Found: {$this->sql}", 85006);
             }
+        }catch(PDOException $e){
+            echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
         }
+
         // Reset Values
         $this->reset();
-        return $result ?: 0;
+
+        // Return
+        return $result;
     }
 
     // Generate UUID
@@ -288,10 +350,10 @@ class Model extends Database
     {
         $time = substr(str_replace('.', '', microtime(true)), -6);
         $uid = 'uuid-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.$time;
-        // Check Already Exist or Return
-        if(self::conn()->table($table)->select()->where([$column => $uid])->single()){
+        // Check Already Exist & Return
+        if(self::conn()->table($table)->select()->filter($column, '=', $uid)->single()){
             return self::uuid($table, $column);
         }
-        return $uid;
+        return strtoupper($uid);
     }
 }
