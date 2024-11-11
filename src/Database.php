@@ -11,51 +11,34 @@
 // Namespace
 namespace CBM\Model;
 
-// Forbidden Access
-defined('ROOTPATH') || http_response_code(403).die('403 Forbidden Access!');
-
 use PDO;
-use Exception;
 use PDOException;
-use CBM\ModelHelper\Resource;
-use CBM\ModelHelper\PDOModelExceptions;
-
-$path = ROOTPATH . "/Config/Config.php";
-if(!file_exists($path)){
-    if(!file_exists(ROOTPATH . "/Config")){
-        mkdir(ROOTPATH . "/Config", 0750);
-    }
-    file_put_contents($path, Resource::config_resources());
-}
-
-require_once($path);
 
 class Database
-{
+{    
+    // PDO Instance
+    private static $instance = null;
 
     // Database Driver
-    private String $driver;
+    private static String $driver;
 
     // Database Host
-    private String $host;
+    private static String $host;
 
     // Database Port
-    private Int $port;
+    private static Int $port;
 
     // Database Name
-    private String $name;
+    private static String $name;
 
     // Database Username
-    private String $user;
+    private static String $user;
 
     // Database Password
-    private String $password;
+    private static String $password;
 
     // DSN
     private String $dsn;
-
-    // PDO Instance
-    private static $instance = null;
 
     // PDO Connection
     protected $pdo;
@@ -64,40 +47,64 @@ class Database
     protected $offset = 0;
 
     // Table
-    protected $table;
+    protected String $table = '';
 
     // Select
-    protected $select = '*';
+    protected String $select = '*';
 
     // Join
-    protected $join = [];
+    protected Array $join = [];
 
     // Where
-    protected $where = [];
+    protected Array $where = [];
 
     // Filter
-    protected $filter = [];
+    protected Array $filter = [];
 
     // Compare
-    protected $compare = '';
+    protected String $compare = '';
 
     // Operator
-    protected $operator = '';
+    protected String $operator = '';
 
     // Order
-    protected $order = '';
+    protected String $order = '';
 
     // Limit
-    protected $limit = 0;
+    protected Int $limit = 0;
 
     // Parameters
-    protected $params = [];
+    protected Array $params = [];
+
+    // Columns for Create Table
+    protected Array $columns = [];
+
+    // Primary Key for Create Table
+    protected String $primaryKey = '';
+
+    // Unique Key for Create Table
+    protected String $uniqueKey = '';
+
+    // Index Key for Create Table
+    protected String $indexKey = '';
+
+    // Fulltext Key for Create Table
+    protected String $fulltextKey = '';
+
+    // Engine for Create Table
+    protected String $engine = 'InnoDB';
+
+    // Charset for Create Table
+    protected String $charset = 'utf8mb4';
+
+    // Collate for Create Table
+    protected String $collate = 'utf8mb4_general_ci';
 
     // SQL Command
-    protected $sql = '';
+    protected String $sql = '';
 
     // Database Drivers
-    private Array $ports = [
+    private static Array $ports = [
         'dblib'     =>   10060, // Microsoft SQL Server
         'mysql'     =>   3306, // Mysql Server
         'pgsql'     =>   5432, // Postgres Server
@@ -108,14 +115,15 @@ class Database
     public function __construct(string $fetch = 'object')
     {
         // Get Resources
-        $this->resource();
+        // $this->resource();
 
         // Get Fetch Method
         $default_fetch = ($fetch != 'assoc') ? PDO::FETCH_OBJ : PDO::FETCH_ASSOC;
         try{
-            $this->pdo = ($this->driver == 'sqlite') ? new PDO($this->dsn()) : new PDO($this->dsn(), $this->user, $this->password);
+            $this->pdo = (self::$driver == 'sqlite') ? new PDO($this->dsn()) : new PDO($this->dsn(), self::$user, self::$password);
 
             $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, $default_fetch);
+            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->pdo->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, false);
 
         }catch(PDOException $e){
@@ -123,55 +131,63 @@ class Database
         }
     }
 
-    // Get Resources
-    private function resource()
+    // Begin Transection
+    protected static function beginTransection()
+    {
+        self::conn();
+        self::$instance->pdo->beginTransaction();
+    }
+
+
+    // Configure DB Model
+    public static function config(array $config):void
     {
         try {
             // Get Host
-            if(!defined('DB_HOST')){
-                throw new PDOModelExceptions("Database Host Error!", 85001);
+            if(!isset($config['host'])){
+                throw new PDOException("Database Host Error!", 85001);
             }
 
             // Get Driver
-            if(!defined('DB_DRIVER')){
-                throw new PDOModelExceptions("Database Driver Error!", 85002);
+            if(!isset($config['driver'])){
+                throw new PDOException("Database Driver Error!", 85002);
             }
 
             // Get Name
-            if(!defined('DB_NAME')){
-                throw new PDOModelExceptions("Database Name Error!", 85003);
+            if(!isset($config['name'])){
+                throw new PDOException("Database Name Error!", 85003);
             }
 
             // Get Username
-            if(!defined('DB_USER')){
-                throw new PDOModelExceptions("Database User Error!", 85004);
+            if(!isset($config['user']) && self::requiredCredentials($config['driver'])){
+                throw new PDOException("Database User Error!", 85004);
             }
 
             // Get Password
-            if(!defined('DB_PASSWORD')){
-                throw new PDOModelExceptions("Database Password Error!", 85005);
+            if(!isset($config['password']) && self::requiredCredentials($config['driver'])){
+                throw new PDOException("Database Password Error!", 85005);
             }
-        }catch(PDOModelExceptions $e){
-            echo $e->message();
+        }catch(PDOException $e){
+            echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
         }
 
-        $this->host = DB_HOST;
-        $this->driver = strtolower(DB_DRIVER);
-        $this->port = defined('DB_PORT') ? DB_PORT : $this->ports[$this->driver];
-        $this->name = defined('DB_NAME') ? DB_NAME : '';
-        $this->user = defined('DB_USER') ? DB_USER : '';
-        $this->password = defined('DB_PASSWORD') ? DB_PASSWORD : '';
+        self::$driver = strtolower($config['driver']);
+        self::$host = $config['host'];
+        self::$name = $config['name'];
+        self::$port = $config['port'] ?? self::$ports[self::$driver];
+        self::$user = $config['user'] ?? 'user_key_missing';
+        self::$password = $config['password'] ?? 'password_key_missing';
     }
 
     // Prepare DSN
     private function dsn():string
     {
-        if($this->driver == 'dblib'){
-            $this->dsn = "{$this->driver}:host={$this->host}:{$this->port};dbname=$this->name";
-        }elseif(($this->driver == 'pgsql') || ($this->driver == 'mysql')){
-            $this->dsn = "{$this->driver}:host={$this->host}:{$this->port};dbname=$this->name";
-        }elseif($this->driver == 'sqlite'){
-            $this->dsn = "{$this->driver}:{$this->host}";
+        if(self::$driver == 'dblib'){
+            $this->dsn = self::$driver.":host=".self::$host.":".self::$port.";dbname=".self::$name;
+        }elseif((self::$driver == 'pgsql') || (self::$driver == 'mysql')){
+            $this->dsn = self::$driver.":host=".self::$host.":".self::$port.";dbname=".self::$name;
+        }elseif(self::$driver == 'sqlite'){
+            $this->dsn = self::$driver.":".self::$host;
         }
         return $this->dsn;
     }
@@ -186,23 +202,39 @@ class Database
         return self::$instance;
     }
 
+    // Set Database Credentials
+    private static function requiredCredentials(string $driver):bool
+    {
+        $driver = strtolower($driver);
+        return (($driver == 'dblib') || ($driver == 'mysql') || (($driver == 'pgsql')));
+    }
+
     // Reset SQL Statement
     protected function reset():void
     {
-        $this->where = [];
-        $this->filter = [];
-        $this->join = [];
-        $this->params = [];
-        $this->select = '*';
-        $this->order = '';
-        $this->limit = '';
-        $this->compare = '';
-        $this->operator = '';
-        $this->table = '';
-        $this->offset = 0;
-        $this->sql = '';
+        $this->table        =   '';
+        $this->where        =   [];
+        $this->filter       =   [];
+        $this->join         =   [];
+        $this->params       =   [];
+        $this->select       =   '*';
+        $this->order        =   '';
+        $this->limit        =   0;
+        $this->compare      =   '';
+        $this->operator     =   '';
+        $this->offset       =   0;
+        $this->sql          =   '';
+        $this->columns      =   [];
+        $this->primaryKey   =   '';
+        $this->uniqueKey    =   '';
+        $this->indexKey     =   '';
+        $this->fulltextKey  =   '';
+        $this->engine       =   'InnoDB';
+        $this->charset      =   'utf8mb4';
+        $this->collate      =   'utf8mb4_general_ci';
     }
 
+    // Hide Properties and Methods 
     public function __debugInfo()
     {
         return [

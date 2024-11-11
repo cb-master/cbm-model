@@ -11,13 +11,7 @@
 // Namespace
 namespace CBM\ModelHelper;
 
-// Forbidden Access
-defined('ROOTPATH') || http_response_code(403).die('403 Forbidden Access!');
-
 use Exception;
-
-// Forbidden Access
-defined('ROOTPATH') || http_response_code(403).die('403 Forbidden Access!');
 
 final class ModelExceptions extends Exception
 {

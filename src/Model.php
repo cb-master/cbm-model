@@ -11,11 +11,7 @@
 // Namespace
 namespace CBM\Model;
 
-// Forbidden Access
-defined('ROOTPATH') || http_response_code(403).die('403 Forbidden Access!');
-
 use PDOException;
-use CBM\ModelHelper\ModelExceptions;
 
 class Model extends Database
 {
@@ -30,6 +26,28 @@ class Model extends Database
     {
         return parent::conn($fetch);
     }
+
+    // Begin Transection
+    public static function beginTransection()
+    {
+        Model::conn()->pdo->beginTransaction();
+    }
+
+    // Commit
+    public static function commit()
+    {
+        Model::conn()->pdo->commit();
+    }
+
+    // Roll Back
+    public static function rollBack()
+    {
+        Model::conn()->pdo->rollBack();
+    }
+
+    ############################
+    ###### CRUD FUNCTIONS ######
+    ############################
 
     // Set Table
     public function table(string $table):object
@@ -82,9 +100,9 @@ class Model extends Database
     }
 
     // Set Limit
-    public function limit(Int|Null $limit = NULL):object
+    public function limit(Int|String $limit = 20):object
     {
-        $limit = (Int) ($limit ?: LIMIT);
+        $limit = (Int) $limit;
 
         $pagenumber = (int) ($_GET['page'] ?? 0) + 1;
         // Get Limit
@@ -126,19 +144,14 @@ class Model extends Database
 
         try{
             // Prepare Statement
-            if(!($stmt = $this->pdo->prepare($this->sql))){
-                throw new PDOException("SQL Error: {$this->sql}", 85006);
-            }
-
+            $stmt = $this->pdo->prepare($this->sql);
             // Execute Statement
-            if(!$stmt->execute($this->params)){
-                throw new PDOException("SQL Param Error: {$this->sql}", 85007);
-            }
+            $stmt->execute($this->params);
 
             // Fetch Data
             $result = $stmt->fetchAll();
         }catch(PDOException $e){
-            echo "[".$e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
+            echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
         }
 
         // Reset Statemment Helpers
@@ -174,16 +187,11 @@ class Model extends Database
                 
         try{
             // Prepare Statement
-            if(!($stmt = $this->pdo->prepare($this->sql))){
-                throw new PDOException("SQL Error: {$this->sql}", 85006);
-            }
-
+            $stmt = $this->pdo->prepare($this->sql);
             // Execute Statement
-            if(!$stmt->execute($this->params)){
-                throw new PDOException("SQL Param Error: {$this->sql}", 85007);
-            }            
+            $stmt->execute($this->params);
         }catch(PDOException $e){
-            echo "[".$e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
+            echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
         }
 
         // Fetch Data
@@ -206,16 +214,11 @@ class Model extends Database
 
         try{
             // Prepare Statement
-            if(!($stmt = $this->pdo->prepare($this->sql))){
-                throw new PDOException("SQL Error: {$this->sql}", 85006);
-            }
-
+            $stmt = $this->pdo->prepare($this->sql);
             // Execute Statement
-            if(!$stmt->execute(array_values($data))){
-                throw new PDOException("SQL Param Error: {$this->sql}", 85007);
-            }
+            $stmt->execute(array_values($data));
         }catch(PDOException $e){
-            echo "[".$e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
+            echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
         }
 
         // Reset Statemment Helpers
@@ -233,16 +236,11 @@ class Model extends Database
         $this->sql = "REPLACE INTO {$this->table} ($columns) VALUES ($placeholders)";
         try{
             // Prepare Statement
-            if(!($stmt = $this->pdo->prepare($this->sql))){
-                throw new PDOException("SQL Error: {$this->sql}", 85006);
-            }
-
+            $stmt = $this->pdo->prepare($this->sql);
             // Execute Statement
-            if(!$stmt->execute(array_values($data))){
-                throw new PDOException("SQL Param Error: {$this->sql}", 85007);
-            }
+            $stmt->execute(array_values($data));
         }catch(PDOException $e){
-            echo "[".$e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
+            echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
         }
 
         // Reset Statemment Helpers
@@ -278,14 +276,9 @@ class Model extends Database
     
                 try{
                     // Prepare Statement
-                    if(!($stmt = $this->pdo->prepare($this->sql))){
-                        throw new PDOException("SQL Error: {$this->sql}", 85006);
-                    }
-    
+                    $stmt = $this->pdo->prepare($this->sql);    
                     // Execute Statement
-                    if(!$stmt->execute($toUpdate)){
-                        throw new PDOException("SQL Param Error: {$this->sql}", 85007);
-                    }
+                    $stmt->execute($toUpdate);
                     $result = (int) $stmt->rowCount();
                 }catch(PDOException $e){
                     echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
@@ -320,14 +313,9 @@ class Model extends Database
                 
                 try{
                     // Prepare Statement
-                    if(!($stmt = $this->pdo->prepare($this->sql))){
-                        throw new PDOException("SQL Error: {$this->sql}", 85006);
-                    }
-        
+                    $stmt = $this->pdo->prepare($this->sql);        
                     // Execute Statement
-                    if(!$stmt->execute($this->params)){
-                        throw new PDOException("SQL Param Error: {$this->sql}", 85007);
-                    }
+                    $stmt->execute($this->params);
                     $result = (int) $stmt->rowCount();
                 }catch(PDOException $e){
                     echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
@@ -339,7 +327,7 @@ class Model extends Database
             echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
         }
 
-        // Reset Values
+        // Reset Statemment Helpers
         $this->reset();
 
         // Return
@@ -356,5 +344,126 @@ class Model extends Database
             return self::uuid($table, $column);
         }
         return strtoupper($uid);
+    }
+
+    #############################
+    ###### TABLE FUNCTIONS ######
+    #############################
+
+    // Add a Column Definition
+    public function addColumn(string $name, string $type, bool $notNull = true, bool $autoIncrement = false, ?string $default = null):object
+    {
+        $column = "`{$name}` {$type}";
+        $column .= $notNull ? " NOT NULL" : '';
+        $column .= $autoIncrement ? " AUTO_INCREMENT" : '';
+        $column .= $default ? " DEFAULT '{$default}'" : '';
+        $this->columns[] = $column;
+        return $this;
+    }
+
+    // Set Primary Key
+    public function primaryKey(string $key):object
+    {
+        $this->primaryKey = $key;
+        return $this;
+    }
+
+    // Set Unique Key
+    public function uniqueKey(string $key):object
+    {
+        $this->uniqueKey = $key;
+        return $this;
+    }
+
+    // Set Index Key
+    public function indexKey(string $key):object
+    {
+        $this->indexKey = $key;
+        return $this;
+    }
+
+    // Set Fulltext Key
+    public function fulltextKey(string $key):object
+    {
+        $this->fulltextKey = $key;
+        return $this;
+    }
+
+    // Set Engine
+    public function engine(?string $engine = null):object
+    {
+        $this->engine = $engine ?: $this->engine;
+        return $this;
+    }
+
+    // Set Charset
+    public function charset(?string $charset = null):object
+    {
+        $this->charset = $charset ?: $this->charset;
+        return $this;
+    }
+
+    // Set Collate
+    public function collate(?string $collate = null):object
+    {
+        $this->collate = $collate ?: $this->collate;
+        return $this;
+    }
+
+    // Generate and Execute the Create Table SQL
+    public function create():bool
+    {
+        try {
+            // Check Table & Columns are Exist
+            if (!$this->table || !$this->columns) {
+                throw new PDOException("Table Name & Columns Must Be Defined.", 85006);
+            }
+    
+            // Create SQL Statement
+            $this->sql = "CREATE TABLE `{$this->table}` (\n";
+            $this->sql .= implode(",\n", $this->columns);
+    
+            // Primary Key if Exist
+            if ($this->primaryKey){
+                $this->sql .= ",\nPRIMARY KEY (`{$this->primaryKey}`)";
+            }
+            
+            // Unique Key if Exist
+            if ($this->uniqueKey){
+                $this->sql .= ",\nUNIQUE KEY (`{$this->uniqueKey}`)";
+            }
+
+            // Index Key if Exist
+            if ($this->indexKey){
+                $this->sql .= ",\nKEY (`{$this->indexKey}`)";
+            }
+
+            // Fulltext Key if Exist
+            if ($this->fulltextKey){
+                $this->sql .= ",\nFULLTEXT KEY (`{$this->fulltextKey}`)";
+            }
+
+            $this->sql .= "\n)\nENGINE={$this->engine} DEFAULT CHARSET={$this->charset} COLLATE={$this->collate};";
+
+            // Prepare Statement
+            if(!($stmt = $this->pdo->prepare($this->sql))){
+                throw new PDOException("SQL Prepare Error: {$this->sql}", 85006);
+            }
+
+            // Execute Statement
+            if(!$stmt->execute()){
+                throw new PDOException("SQL Statement Execution Error: {$this->sql}", 85007);
+            }
+
+            // Reset Values 
+            $this->reset();
+            return true;
+        } catch (PDOException $e){
+            echo '<pre>';
+            print_r($e);
+            echo '</pre>';
+            echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
+            return false;
+        }
     }
 }
