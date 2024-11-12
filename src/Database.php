@@ -132,12 +132,23 @@ class Database
     }
 
     // Begin Transection
-    protected static function beginTransection()
+    public static function beginTransaction()
     {
         self::conn();
-        self::$instance->pdo->beginTransaction();
+        return self::$instance->pdo->beginTransaction();
     }
 
+    // Commit Transection
+    public static function commit()
+    {
+        return self::$instance->pdo->commit();
+    }
+
+    // Rollback Transection
+    public static function rollBack()
+    {
+       return self::$instance->pdo->rollBack();
+    }
 
     // Configure DB Model
     public static function config(array $config):void
@@ -193,11 +204,11 @@ class Database
     }
 
     // Connection
-    protected static function conn(string $fetch = 'object'):Null|Object
+    public static function conn(string $fetch = 'object'):Null|Object
     {
         if(!self::$instance)
         {
-            self::$instance = new static($fetch);
+            self::$instance = new Static($fetch);
         }
         return self::$instance;
     }

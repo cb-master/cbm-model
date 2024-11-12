@@ -12,6 +12,7 @@
 namespace CBM\Model;
 
 use PDOException;
+use CBM\ModelHelper\ModelExceptions;
 
 class Model extends Database
 {
@@ -21,40 +22,16 @@ class Model extends Database
     // Fetch As Array Constant
     public const ASSOC = 'assoc';
 
-    // Get Connection
-    public static function conn(string $fetch = 'object'):Null|Object
-    {
-        return parent::conn($fetch);
-    }
-
-    // Begin Transection
-    public static function beginTransection()
-    {
-        Model::conn()->pdo->beginTransaction();
-    }
-
-    // Commit
-    public static function commit()
-    {
-        Model::conn()->pdo->commit();
-    }
-
-    // Roll Back
-    public static function rollBack()
-    {
-        Model::conn()->pdo->rollBack();
-    }
-
-    ############################
-    ###### CRUD FUNCTIONS ######
-    ############################
-
     // Set Table
     public function table(string $table):object
     {
         $this->table = $table;
         return $this;
     }
+
+    ############################
+    ###### CRUD FUNCTIONS ######
+    ############################
 
     // Set Slect Columns
     public function select(string $columns = '*'):object
@@ -207,19 +184,14 @@ class Model extends Database
     public function insert(array $data):int
     {
         $columns = implode(', ', array_keys($data));
-
         $placeholders = implode(', ', array_fill(0, count($data), '?'));
 
         $this->sql = "INSERT INTO {$this->table} ($columns) VALUES ($placeholders)";
 
-        try{
-            // Prepare Statement
-            $stmt = $this->pdo->prepare($this->sql);
-            // Execute Statement
-            $stmt->execute(array_values($data));
-        }catch(PDOException $e){
-            echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
-        }
+        // Prepare Statement
+        $stmt = $this->pdo->prepare($this->sql);
+        // Execute Statement
+        $stmt->execute(array_values($data));
 
         // Reset Statemment Helpers
         $this->reset();
@@ -234,14 +206,11 @@ class Model extends Database
         $placeholders = implode(', ', array_fill(0, count($data), '?'));
 
         $this->sql = "REPLACE INTO {$this->table} ($columns) VALUES ($placeholders)";
-        try{
-            // Prepare Statement
-            $stmt = $this->pdo->prepare($this->sql);
-            // Execute Statement
-            $stmt->execute(array_values($data));
-        }catch(PDOException $e){
-            echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
-        }
+
+        // Prepare Statement
+        $stmt = $this->pdo->prepare($this->sql);
+        // Execute Statement
+        $stmt->execute(array_values($data));
 
         // Reset Statemment Helpers
         $this->reset();
@@ -253,7 +222,6 @@ class Model extends Database
     public function update(array $data):int
     {
         // Get Params
-        $result = 0;
         $set = [];
         foreach ($data as $column => $value) {
             $set[] = "$column = ?";
@@ -273,22 +241,18 @@ class Model extends Database
                 }elseif($this->filter){
                     $this->sql .= ' WHERE ' . implode(" {$this->operator} ", $this->filter);
                 }
-    
-                try{
-                    // Prepare Statement
-                    $stmt = $this->pdo->prepare($this->sql);    
-                    // Execute Statement
-                    $stmt->execute($toUpdate);
-                    $result = (int) $stmt->rowCount();
-                }catch(PDOException $e){
-                    echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
-                }
             }else{
-                throw new PDOException("Where Clause Not Found: {$this->sql}", 85006);
+                throw new ModelExceptions("Where Clause Not Found: {$this->sql}", 85006);
             }
-        }catch(PDOException $e) {
-            echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
+        }catch(ModelExceptions $e) {
+            echo $e->message();
         }
+        // Prepare Statement
+        $stmt = $this->pdo->prepare($this->sql);
+        // Execute Statement
+        $stmt->execute($toUpdate);
+        // Get Result
+        $result = (int) $stmt->rowCount();
         // Reset Statemment Helpers
         $this->reset();
         // Return
@@ -309,23 +273,18 @@ class Model extends Database
                     $this->sql .= ' WHERE ' . implode(" {$this->operator} ", $this->where);
                 }elseif($this->filter){
                     $this->sql .= ' WHERE ' . implode(" {$this->operator} ", $this->filter);
-                }
-                
-                try{
-                    // Prepare Statement
-                    $stmt = $this->pdo->prepare($this->sql);        
-                    // Execute Statement
-                    $stmt->execute($this->params);
-                    $result = (int) $stmt->rowCount();
-                }catch(PDOException $e){
-                    echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
-                }
+                }                
             }else{
-                throw new PDOException("Where Clause Not Found: {$this->sql}", 85006);
+                throw new ModelExceptions("Where Clause Not Found: {$this->sql}", 85006);
             }
-        }catch(PDOException $e){
-            echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
+        }catch(ModelExceptions $e){
+            echo $e->message();
         }
+        // Prepare Statement
+        $stmt = $this->pdo->prepare($this->sql);        
+        // Execute Statement
+        $stmt->execute($this->params);
+        $result = (int) $stmt->rowCount();
 
         // Reset Statemment Helpers
         $this->reset();
