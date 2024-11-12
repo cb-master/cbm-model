@@ -49,6 +49,12 @@ class Database
     // Table
     protected String $table = '';
 
+    // Group
+    protected String $group = '';
+
+    // Having
+    protected String $having = '';
+
     // Select
     protected String $select = '*';
 
@@ -224,6 +230,8 @@ class Database
     protected function reset():void
     {
         $this->table        =   '';
+        $this->group        =   '';
+        $this->having       =   '';
         $this->where        =   [];
         $this->filter       =   [];
         $this->join         =   [];

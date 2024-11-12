@@ -40,6 +40,20 @@ class Model extends Database
         return $this;
     }
 
+    // Set Group By
+    public function group(string $column)
+    {
+        $this->group = $column;
+        return $this;
+    }
+
+    // Set Having
+    public function having(string $column)
+    {
+        $this->having = $column;
+        return $this;
+    }
+
     // Set Join
     public function join(string $table, string $condition, string $type = 'LEFT'):object
     {
@@ -99,7 +113,7 @@ class Model extends Database
         $this->sql = "SELECT {$this->select} FROM {$this->table}";
         $result = [];
 
-        if (!empty($this->joins)) {
+        if (!empty($this->join)) {
             $this->sql .= ' ' . implode(' ', $this->join);
         }
 
@@ -109,6 +123,14 @@ class Model extends Database
 
         if (!empty($this->filter)) {
             $this->sql .= ' WHERE ' . implode(" AND ", $this->filter);
+        }
+
+        if (!empty($this->group)) {
+            $this->sql .= " GROUP BY {$this->group}";
+        }
+
+        if (!empty($this->having)) {
+            $this->sql .= " HAVING {$this->having}";
         }
         
         if (!empty($this->order)) {
@@ -142,7 +164,7 @@ class Model extends Database
     {
         $this->sql = "SELECT {$this->select} FROM {$this->table}";
 
-        if (!empty($this->joins)) {
+        if (!empty($this->join)) {
             $this->sql .= ' ' . implode(' ', $this->join);
         }
 
