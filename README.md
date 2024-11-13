@@ -19,8 +19,7 @@ Install with composer:
 composer require cb-master/cb-model
 ```
 Configure your database settings in ypur application PHP page top section.
-```
-<?php
+```php
 // Require Config File Where Database Variables or CONSTANTS are Provided
 require_once("./config.php");
 
