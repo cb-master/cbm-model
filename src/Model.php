@@ -35,9 +35,9 @@ class Model extends Database
     }
 
     // Set Group By
-    public function group(string $column)
+    public function group(string $columns)
     {
-        $this->group = $column;
+        $this->group = $columns;
         return $this;
     }
 

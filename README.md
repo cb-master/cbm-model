@@ -37,4 +37,22 @@ Model::config([
 
 ```
 ## Usage
-This project provides a base for any PHP application needing a reliable and efficient database model, especially useful for billing and cloud services. For detailed usage examples, please refer to the documentation provided in the docs folder.
+This project provides a base for any PHP application needing a reliable and efficient database model, especially useful for billing and cloud services. For detailed usage examples, please see the given method implementation below.
+
+### Methods to Use
+* table(string $table) // Returning Object
+* select(string $select = '*') // Returning Object
+* group(string $columns) // Returning Object
+* having(string $column) // Returning Object
+* join(string $table, string $condition, string $type = 'LEFT') // Returning Object
+
+### Get All Data From Table
+```php
+Model::table('table_name')->select()->get();
+```
+
+### Get Limited Data From Table (Default is 20)
+Additional method to use is limit(int|string $limit = 20). Returning object
+```php
+Model::table('table_name')->select()->limit()->get();
+```
