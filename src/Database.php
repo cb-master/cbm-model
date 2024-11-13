@@ -113,7 +113,7 @@ class Database
     public const ASSOC = 'assoc';
 
     // Initiate Database
-    public function __construct(string $fetch = 'object')
+    public function __construct(String $fetch = self::OBJECT)
     {
         // Get Fetch Method
         $default_fetch = ($fetch != 'assoc') ? PDO::FETCH_OBJ : PDO::FETCH_ASSOC;
@@ -190,7 +190,7 @@ class Database
     }
 
     // Connection
-    public static function conn(string $fetch = 'object'):Null|Object
+    public static function conn(string $fetch = self::OBJECT):Null|Object
     {
         if(!self::$instance)
         {

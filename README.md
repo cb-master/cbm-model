@@ -41,20 +41,26 @@ Model::config([
 ## Usage
 This project provides a base for any PHP application needing a reliable and efficient database model, especially useful for billing and cloud services. For detailed usage examples, please see the given method implementation below.
 
-### Methods to Use
-* #### *table(string $table) // Returning Object*
-* #### *select(string $select = '*') // Returning Object*
+### Methods to Make Query
+* *conn(String $fetch = self::OBJECT) // Returning Object. This is a Static Method. Another Argument is self::ASSOC*
+* *table(string $table) // Returning Object*
+* *select(string $select = '*') // Returning Object*
 * *group(string $columns) // Returning Object*
 * *having(string $column) // Returning Object*
 * *join(string $table, string $condition, string $type = 'LEFT') // Returning Object*
 * *filter(string $column, string $operator, int|string $value) // Returning Object*
 * *where(array $where, string $compare = '=', string $operator = 'AND') // Returning Object*
 * *order(string $column, string $direction = 'ASC') // Returning Object*
+* *get() // Returning Array With Objects Value. Always use last in method chaining*
+* *single() // Returning Object. Always use last in method chaining*
 
 ### Get All Data From Table
 ```php
-// Get All Data With Select *
+// Get All Data With Select *. Returning Array With Objects
 Model::conn()->table('table_name')->select()->get();
+
+// Get All Data With Select *. To Return as Array
+Model::conn(Model::ASSOSC)->table('table_name')->select()->get();
 
 // Get All Data With Selected Columns
 Model::conn()->table('table_name')->select('column_1, column_2, column_3, .....')->get();
