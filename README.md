@@ -11,7 +11,7 @@ Cloud Bill Master Database Model is a PHP-based project that implements a robust
 * <b>Easy Integration</b>: Integrates seamlessly with other PHP-based applications and frameworks, allowing flexible deployment in diverse environments.</br>
 
 ## Technologies Used
-PHP (Object-Oriented): Core programming language, providing OOP features for structure and maintainability.
+*PHP (Object-Oriented)*: Core programming language, providing OOP features for structure and maintainability.
 MySQL: Relational database management system used for data storage, with optimized queries for faster performance.
 PDO (PHP Data Objects): Utilized for secure database access with prepared statements to prevent SQL injection.
 ## Installation
