@@ -16,12 +16,6 @@ use CBM\ModelHelper\ModelExceptions;
 
 class Model extends Database
 {
-    // Fetch As Object Constant
-    public const OBJECT = 'object';
-
-    // Fetch As Array Constant
-    public const ASSOC = 'assoc';
-
     // Set Table
     public function table(string $table):object
     {
@@ -399,52 +393,44 @@ class Model extends Database
             if (!$this->table || !$this->columns) {
                 throw new PDOException("Table Name & Columns Must Be Defined.", 85006);
             }
-    
-            // Create SQL Statement
-            $this->sql = "CREATE TABLE `{$this->table}` (\n";
-            $this->sql .= implode(",\n", $this->columns);
-    
-            // Primary Key if Exist
-            if ($this->primaryKey){
-                $this->sql .= ",\nPRIMARY KEY (`{$this->primaryKey}`)";
-            }
-            
-            // Unique Key if Exist
-            if ($this->uniqueKey){
-                $this->sql .= ",\nUNIQUE KEY (`{$this->uniqueKey}`)";
-            }
-
-            // Index Key if Exist
-            if ($this->indexKey){
-                $this->sql .= ",\nKEY (`{$this->indexKey}`)";
-            }
-
-            // Fulltext Key if Exist
-            if ($this->fulltextKey){
-                $this->sql .= ",\nFULLTEXT KEY (`{$this->fulltextKey}`)";
-            }
-
-            $this->sql .= "\n)\nENGINE={$this->engine} DEFAULT CHARSET={$this->charset} COLLATE={$this->collate};";
-
-            // Prepare Statement
-            if(!($stmt = $this->pdo->prepare($this->sql))){
-                throw new PDOException("SQL Prepare Error: {$this->sql}", 85006);
-            }
-
-            // Execute Statement
-            if(!$stmt->execute()){
-                throw new PDOException("SQL Statement Execution Error: {$this->sql}", 85007);
-            }
-
             // Reset Values 
-            $this->reset();
-            return true;
-        } catch (PDOException $e){
-            echo '<pre>';
-            print_r($e);
-            echo '</pre>';
+        }catch(PDOException $e){
             echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
-            return false;
         }
+        // Create SQL Statement
+        $this->sql = "CREATE TABLE `{$this->table}` (\n";
+        $this->sql .= implode(",\n", $this->columns);
+
+        // Primary Key if Exist
+        if ($this->primaryKey){
+            $this->sql .= ",\nPRIMARY KEY (`{$this->primaryKey}`)";
+        }
+        
+        // Unique Key if Exist
+        if ($this->uniqueKey){
+            $this->sql .= ",\nUNIQUE KEY (`{$this->uniqueKey}`)";
+        }
+
+        // Index Key if Exist
+        if ($this->indexKey){
+            $this->sql .= ",\nKEY (`{$this->indexKey}`)";
+        }
+
+        // Fulltext Key if Exist
+        if ($this->fulltextKey){
+            $this->sql .= ",\nFULLTEXT KEY (`{$this->fulltextKey}`)";
+        }
+
+        $this->sql .= "\n)\nENGINE={$this->engine} DEFAULT CHARSET={$this->charset} COLLATE={$this->collate};";
+
+        // Prepare Statement
+        $stmt = $this->pdo->prepare($this->sql);
+
+        // Execute Statement
+        $result = $stmt->execute();
+
+        // Reset Values
+        $this->reset();
+        return $result;
     }
 }

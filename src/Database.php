@@ -19,9 +19,6 @@ class Database
     // PDO Instance
     private static $instance = null;
 
-    // Database Driver
-    private static String $driver;
-
     // Database Host
     private static String $host;
 
@@ -109,29 +106,24 @@ class Database
     // SQL Command
     protected String $sql = '';
 
-    // Database Drivers
-    private static Array $ports = [
-        'dblib'     =>   10060, // Microsoft SQL Server
-        'mysql'     =>   3306, // Mysql Server
-        'pgsql'     =>   5432, // Postgres Server
-        'sqlite'    =>   0, // Sqlite
-    ];
+    // Fetch As Object Constant
+    public const OBJECT = 'object';
+
+    // Fetch As Array Constant
+    public const ASSOC = 'assoc';
 
     // Initiate Database
     public function __construct(string $fetch = 'object')
     {
-        // Get Resources
-        // $this->resource();
-
         // Get Fetch Method
         $default_fetch = ($fetch != 'assoc') ? PDO::FETCH_OBJ : PDO::FETCH_ASSOC;
-        try{
-            $this->pdo = (self::$driver == 'sqlite') ? new PDO($this->dsn()) : new PDO($this->dsn(), self::$user, self::$password);
 
+        // Get Connection
+        try{
+            $this->pdo = new PDO($this->dsn(), self::$user, self::$password);
             $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, $default_fetch);
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->pdo->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, false);
-
         }catch(PDOException $e){
             exit('<body style="margin:0;"><div style="height:100vh;position:relative;"><h1 style="text-align:center;color:#ef3a3a; position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);margin:0;">Connection Error!<br>['.$e->getCode().'] - '.$e->getMessage().'</h1></div></body>');
         }
@@ -165,47 +157,35 @@ class Database
                 throw new PDOException("Database Host Error!", 85001);
             }
 
-            // Get Driver
-            if(!isset($config['driver'])){
-                throw new PDOException("Database Driver Error!", 85002);
-            }
-
             // Get Name
             if(!isset($config['name'])){
                 throw new PDOException("Database Name Error!", 85003);
             }
 
             // Get Username
-            if(!isset($config['user']) && self::requiredCredentials($config['driver'])){
+            if(!isset($config['user'])){
                 throw new PDOException("Database User Error!", 85004);
             }
 
             // Get Password
-            if(!isset($config['password']) && self::requiredCredentials($config['driver'])){
+            if(!isset($config['password'])){
                 throw new PDOException("Database Password Error!", 85005);
             }
         }catch(PDOException $e){
             echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
         }
 
-        self::$driver = strtolower($config['driver']);
         self::$host = $config['host'];
         self::$name = $config['name'];
-        self::$port = $config['port'] ?? self::$ports[self::$driver];
-        self::$user = $config['user'] ?? 'user_key_missing';
-        self::$password = $config['password'] ?? 'password_key_missing';
+        self::$port = (Int) ($config['port'] ?? 3306);
+        self::$user = $config['user'];
+        self::$password = $config['password'];
     }
 
     // Prepare DSN
     private function dsn():string
     {
-        if(self::$driver == 'dblib'){
-            $this->dsn = self::$driver.":host=".self::$host.":".self::$port.";dbname=".self::$name;
-        }elseif((self::$driver == 'pgsql') || (self::$driver == 'mysql')){
-            $this->dsn = self::$driver.":host=".self::$host.":".self::$port.";dbname=".self::$name;
-        }elseif(self::$driver == 'sqlite'){
-            $this->dsn = self::$driver.":".self::$host;
-        }
+        $this->dsn = "mysql:host=".self::$host.":".self::$port.";dbname=".self::$name;
         return $this->dsn;
     }
 
@@ -217,13 +197,6 @@ class Database
             self::$instance = new Static($fetch);
         }
         return self::$instance;
-    }
-
-    // Set Database Credentials
-    private static function requiredCredentials(string $driver):bool
-    {
-        $driver = strtolower($driver);
-        return (($driver == 'dblib') || ($driver == 'mysql') || (($driver == 'pgsql')));
     }
 
     // Reset SQL Statement
