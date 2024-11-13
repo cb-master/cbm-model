@@ -2,8 +2,8 @@
 Cloud Bill Master Database Model is a PHP-based project that implements a robust, object-oriented database management system for handling complex transactions and data manipulation tasks. Built on top of MySQL, this model aims to provide a high-performance, flexible, and secure way to interact with databases in PHP applications, specifically designed to streamline billing and cloud data management systems.
 
 # Key Features
-* <b>Object-Oriented Structure</b>: Built with PHP OOP principles, ensuring code reusability, scalability, and maintainability.
-Custom Database and Model Classes: Uses a custom Database class for managing database connections, queries, and transactions, and a Model class to represent data entities in the application.</br>
+* <b>Object-Oriented Structure</b>: Built with PHP OOP principles, ensuring code reusability, scalability, and maintainability.</br>
+* <b>Custom Database and Model Classes</b>: Uses a custom Database class for managing database connections, queries, and transactions, and a Model class to represent data entities in the application.</br>
 * <b>Secure Transactions</b>*: Implements ACID-compliant transactions for consistent and reliable data handling.</br>
 * <b>Dynamic Query Builder</b>*: Supports dynamic query generation with a range of options for filters, sorting, and pagination, making it easy to create complex queries without directly writing SQL.</br>
 * <b>Error Handling</b>*: Comprehensive error handling and logging for tracking and debugging issues efficiently.</br>
