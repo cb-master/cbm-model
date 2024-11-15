@@ -7,7 +7,7 @@ Cloud Bill Master Database Model is a PHP-based project that implements a robust
 * <b>Secure Transactions</b>: Implements ACID-compliant transactions for consistent and reliable data handling.</br>
 * <b>Dynamic Query Builder</b>: Supports dynamic query generation with a range of options for filters, sorting, and pagination, making it easy to create complex queries without directly writing SQL.</br>
 * <b>Error Handling</b>: Comprehensive error handling and logging for tracking and debugging issues efficiently.</br>
-* <b>Scalable Architecture</b>: Designed with scalability in mind, suitable for small and big applications.</br>
+* <b>Scalable Architecture</b>: Designed with scalability in mind, suitable for all type of PHP applications.</br>
 * <b>Easy Integration</b>: Integrates seamlessly with other PHP-based applications and frameworks, allowing flexible deployment in diverse environments.</br>
 
 ## Technologies Used
