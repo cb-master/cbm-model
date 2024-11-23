@@ -84,10 +84,11 @@ Model::conn()->table('table_name')->select()->get();
 
 // Get All Data With Selected Columns
 Model::conn()->table('table_name')->select('column_1, column_2, column_3, .....')->get();
+
 ```
 
 ### Get Limited Data From Table (Default is 20)
-Additional method to use is limit(int|string $limit = 20). Returning object
+Additional method to use is limit()
 ```php
 // Get Data for Default Limit 20
 Model::conn()->table('table_name')->select()->limit()->get();
