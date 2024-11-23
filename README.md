@@ -1,5 +1,5 @@
 # Cloud Bill Master Database Model
-Cloud Bill Master Database Model is a PHP-based project that implements a robust, object-oriented database management system for handling complex transactions and data manipulation tasks. Built on top of MySQL, this model aims to provide a high-performance, flexible, and secure way to interact with databases in PHP applications, specifically designed to streamline billing and cloud data management systems.
+Cloud Bill Master Singleton Database Model is a PHP-based project that implements a robust, object-oriented database management system for handling complex transactions and data manipulation tasks. Built on top of MySQL, this singleton model aims to provide a high-performance, flexible, and secure way to interact with databases in PHP applications, specifically designed to streamline billing and cloud data management systems.
 
 # Key Features
 * <b>Object-Oriented Structure</b>: Built with PHP OOP principles, ensuring code reusability, scalability, and maintainability.</br>
@@ -31,12 +31,24 @@ require_once("./vendor/autoload.php");
 use CBM\Model\Model;
 // Config DB Model
 Model::config([
+    'driver'    =>  'mysql',
     'host'      =>  'localhost',
     'name'      =>  'database_name',
     'user'      =>  'database_user_here',
     'password'  =>  'database_password_here',
 ]);
 
+```
+
+You can ignore the driver key if you are using the mysql driver. Mysql is the default driver in this system.
+ ```php
+// Config DB Model
+Model::config([
+    'host'      =>  'localhost',
+    'name'      =>  'database_name',
+    'user'      =>  'database_user_here',
+    'password'  =>  'database_password_here',
+]);
 ```
 ## Usage
 This project provides a base for any PHP application needing a reliable and efficient database model, especially useful for billing and cloud services. For detailed usage examples, please see the given method implementation below.
