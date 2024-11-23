@@ -13,29 +13,12 @@ namespace CBM\Model;
 
 use PDO;
 use PDOException;
+use CBM\ModelHelper\ModelExceptions;
 
-class Database
+class Database Extends Driver
 {    
     // PDO Instance
     private static $instance = null;
-
-    // Database Host
-    private static String $host;
-
-    // Database Port
-    private static Int $port;
-
-    // Database Name
-    private static String $name;
-
-    // Database Username
-    private static String $user;
-
-    // Database Password
-    private static String $password;
-
-    // DSN
-    private String $dsn;
 
     // PDO Connection
     protected $pdo;
@@ -64,8 +47,8 @@ class Database
     // Filter
     protected Array $filter = [];
 
-    // Compare
-    protected String $compare = '';
+    // Filter
+    protected Array $between = [];
 
     // Operator
     protected String $operator = '';
@@ -79,20 +62,23 @@ class Database
     // Parameters
     protected Array $params = [];
 
-    // Columns for Create Table
+    // Columns
     protected Array $columns = [];
 
+    // Placeholders
+    protected String $placeholders = '';
+
     // Primary Key for Create Table
-    protected String $primaryKey = '';
+    protected String $primary = '';
 
     // Unique Key for Create Table
-    protected String $uniqueKey = '';
+    protected Array $unique = [];
 
     // Index Key for Create Table
-    protected String $indexKey = '';
+    protected Array $index = [];
 
     // Fulltext Key for Create Table
-    protected String $fulltextKey = '';
+    protected Array $fulltext = [];
 
     // Engine for Create Table
     protected String $engine = 'InnoDB';
@@ -105,6 +91,9 @@ class Database
 
     // SQL Command
     protected String $sql = '';
+
+    // Query Action
+    protected String $action = '';
 
     // Fetch As Object Constant
     public const OBJECT = 'object';
@@ -120,7 +109,7 @@ class Database
 
         // Get Connection
         try{
-            $this->pdo = new PDO($this->dsn(), self::$user, self::$password);
+            $this->pdo = new PDO($this->dsn(), $this->user(), $this->password());
             $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, $default_fetch);
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->pdo->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, false);
@@ -145,48 +134,9 @@ class Database
     // Rollback Transection
     public static function rollBack()
     {
-       return self::$instance->pdo->rollBack();
-    }
-
-    // Configure DB Model
-    public static function config(array $config):void
-    {
         try {
-            // Get Host
-            if(!isset($config['host'])){
-                throw new PDOException("Database Host Error!", 85001);
-            }
-
-            // Get Name
-            if(!isset($config['name'])){
-                throw new PDOException("Database Name Error!", 85003);
-            }
-
-            // Get Username
-            if(!isset($config['user'])){
-                throw new PDOException("Database User Error!", 85004);
-            }
-
-            // Get Password
-            if(!isset($config['password'])){
-                throw new PDOException("Database Password Error!", 85005);
-            }
-        }catch(PDOException $e){
-            echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
-        }
-
-        self::$host = $config['host'];
-        self::$name = $config['name'];
-        self::$port = (Int) ($config['port'] ?? 3306);
-        self::$user = $config['user'];
-        self::$password = $config['password'];
-    }
-
-    // Prepare DSN
-    private function dsn():string
-    {
-        $this->dsn = "mysql:host=".self::$host.":".self::$port.";dbname=".self::$name;
-        return $this->dsn;
+            self::$instance->pdo->rollBack();
+        }catch(PDOException $e){}
     }
 
     // Connection
@@ -199,6 +149,114 @@ class Database
         return self::$instance;
     }
 
+    // Make Query
+    public function makeQuery():string
+    {
+        try {
+            if(!$this->action){
+                throw new ModelExceptions("SQL Building Error!", 85008);
+            }
+        }catch(ModelExceptions $e){
+            echo $e->message();
+        }
+
+        // Check $this->table Exist
+        try {
+            if(!$this->table){
+                throw new ModelExceptions("Table Name Not Found!", 85009);
+            }
+        }catch(ModelExceptions $e){
+            echo $e->message();
+        }
+
+        // SQL For Select
+        if($this->action === 'select'){
+            $this->sql = "SELECT {$this->select} FROM {$this->table}";
+            // Join SQL
+            $this->sql .= $this->join ? ' ' . implode(' ', $this->join) : '';
+            // Where SQL
+            try {
+                if(!$this->between || !$this->filter){
+                    $this->sql .= $this->where ? ' WHERE ' . implode(" {$this->operator} ", $this->where) : '';
+                }else{
+                    throw new PDOException("You Can't Use filter(), where() & between() Together!", 85002);
+                }
+            }catch(PDOException $e) {
+                echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
+            }
+            // Filter SQL
+            try {
+                if(!$this->where || !$this->between){
+                    $this->sql .= $this->filter ? ' WHERE ' . implode(" ", $this->filter) : '';
+                }else{
+                    throw new PDOException("You Can't Use filter(), where() & between() Together!", 85002);
+                }
+            }catch(PDOException $e) {
+                echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
+            }
+            // Between SQL
+            try {
+                if(!$this->where || !$this->filter){
+                    $this->sql .= $this->between ? ' WHERE ' . implode(" ", $this->between) : '';
+                }else{
+                    throw new PDOException("You Can't Use filter(), where() & between() Together!", 85002);
+                }
+            }catch(PDOException $e) {
+                echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
+            }
+            // Group SQL
+            $this->sql .= $this->group ? " GROUP BY {$this->group}" : '';
+            // Having SQL
+            $this->sql .= $this->having ? " HAVING {$this->having}" : '';
+            // Order SQL
+            $this->sql .= $this->order ? " {$this->order}" : '';
+            // Limit SQL
+            $this->sql .= $this->limit ? " {$this->limit}" : '';
+        }
+        // SQL For Insert
+        elseif($this->action === 'insert'){
+            $columns = implode(', ', array_values($this->columns));
+            $this->sql = "INSERT INTO {$this->table} ({$columns}) VALUES ({$this->placeholders})";
+        }
+        // SQL For Replace
+        elseif($this->action === 'replace'){
+            $columns = implode(', ', array_values($this->columns));
+            $this->sql = "REPLACE INTO {$this->table} ({$columns}) VALUES ({$this->placeholders})";
+        }
+        // SQL For Delete
+        elseif($this->action === 'delete'){
+            $columns = implode(', ', array_values($this->columns));
+            $this->sql = "UPDATE {$this->table} SET " . implode(', ', $this->columns);
+            // Check Where Statement
+            if ($this->where || $this->filter){
+                if($this->where){
+                    $this->sql .= ' WHERE ' . implode(" {$this->operator} ", $this->where);
+                }elseif($this->filter){
+                    $this->sql .= ' WHERE ' . implode(" ", $this->filter);
+                }
+            }else{
+                throw new ModelExceptions("Where Clause Not Found: {$this->sql}", 85006);
+            }
+        }
+        // SQL For Delete
+        elseif($this->action === 'pop'){
+            $columns = implode(', ', array_values($this->columns));
+            $this->sql = "DELETE FROM {$this->table}";
+            // Check Where Statement
+            if ($this->where || $this->filter){
+                if($this->where){
+                    $this->sql .= ' WHERE ' . implode(" {$this->operator} ", $this->where);
+                }elseif($this->filter){
+                    $this->sql .= ' WHERE ' . implode(" ", $this->filter);
+                }
+            }else{
+                throw new ModelExceptions("Where Clause Not Found: {$this->sql}", 85006);
+            }
+        }
+        // Return Query
+        return $this->sql;
+    }
+
     // Reset SQL Statement
     protected function reset():void
     {
@@ -207,20 +265,21 @@ class Database
         $this->having       =   '';
         $this->where        =   [];
         $this->filter       =   [];
+        $this->between      =   [];
         $this->join         =   [];
         $this->params       =   [];
         $this->select       =   '*';
         $this->order        =   '';
         $this->limit        =   0;
-        $this->compare      =   '';
         $this->operator     =   '';
         $this->offset       =   0;
         $this->sql          =   '';
         $this->columns      =   [];
-        $this->primaryKey   =   '';
-        $this->uniqueKey    =   '';
-        $this->indexKey     =   '';
-        $this->fulltextKey  =   '';
+        $this->placeholders =   '';
+        $this->primary      =   '';
+        $this->unique       =   [];
+        $this->index        =   [];
+        $this->fulltext     =   [];
         $this->engine       =   'InnoDB';
         $this->charset      =   'utf8mb4';
         $this->collate      =   'utf8mb4_general_ci';

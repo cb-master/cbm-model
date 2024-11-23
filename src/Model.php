@@ -30,6 +30,7 @@ class Model extends Database
     // Set Slect Columns
     public function select(string $columns = '*'):object
     {
+        $this->action = 'select';
         $this->select = $columns;
         return $this;
     }
@@ -57,10 +58,17 @@ class Model extends Database
     }
 
     // Set Where
-    public function filter(string $column, string $operator, int|string $value):object
+    public function filter(string $column, string $compare, Int|String $value, ?String $operator = null):object
     {
-        $this->filter[] = "{$column} {$operator} ?";
+        $this->filter[] = "{$column} {$compare} ?" . ($operator ? " {$operator}": "");
         $this->params[] = $value;
+        return $this;
+    }
+
+    // Set Where
+    public function between(string $column, string $min, string $max, ?String $operator = null):object
+    {
+        $this->between[] = "{$column} BETWEEN {$min} AND {$max}" . ($operator ? " {$operator}": "");
         return $this;
     }
 
@@ -68,9 +76,8 @@ class Model extends Database
     public function where(array $where, string $compare = '=', string $operator = 'AND'):object // $operator = AND / OR / && / ||
     {
         $this->operator = $operator;
-        $this->compare = $compare;
         foreach($where as $key=>$value){
-            $this->where[] = "{$key} {$this->compare} ?";
+            $this->where[] = "{$key} {$compare} ?";
             $this->params[] = $value;
         }
         return $this;
@@ -104,43 +111,14 @@ class Model extends Database
     // Execute Database
     public function get():array
     {
-        $this->sql = "SELECT {$this->select} FROM {$this->table}";
-        $result = [];
-
-        if (!empty($this->join)) {
-            $this->sql .= ' ' . implode(' ', $this->join);
-        }
-
-        if (!empty($this->where)) {
-            $this->sql .= ' WHERE ' . implode(" {$this->operator} ", $this->where);
-        }
-
-        if (!empty($this->filter)) {
-            $this->sql .= ' WHERE ' . implode(" AND ", $this->filter);
-        }
-
-        if (!empty($this->group)) {
-            $this->sql .= " GROUP BY {$this->group}";
-        }
-
-        if (!empty($this->having)) {
-            $this->sql .= " HAVING {$this->having}";
-        }
-        
-        if (!empty($this->order)) {
-            $this->sql .= " {$this->order}";
-        }
-
-        if (!empty($this->limit)) {
-            $this->sql .= " {$this->limit}";
-        }
+        // Make Query
+        $sql = $this->makeQuery();
 
         try{
             // Prepare Statement
-            $stmt = $this->pdo->prepare($this->sql);
+            $stmt = $this->pdo->prepare($sql);
             // Execute Statement
             $stmt->execute($this->params);
-
             // Fetch Data
             $result = $stmt->fetchAll();
         }catch(PDOException $e){
@@ -150,45 +128,24 @@ class Model extends Database
         // Reset Statemment Helpers
         $this->reset();
         // Return
-        return $result;
+        return $result ?? [];
     }
 
     // Execute Database For Single Value
     public function single():object|array
     {
-        $this->sql = "SELECT {$this->select} FROM {$this->table}";
-
-        if (!empty($this->join)) {
-            $this->sql .= ' ' . implode(' ', $this->join);
-        }
-
-        if (!empty($this->where)) {
-            $this->sql .= ' WHERE ' . implode(" {$this->operator} ", $this->where);
-        }
-
-        if (!empty($this->filter)) {
-            $this->sql .= ' WHERE ' . implode(" AND ", $this->filter);
-        }
-
-        if (!empty($this->order)) {
-            $this->sql .= " {$this->order}";
-        }
-
-        if (!empty($this->limit)) {
-            $this->sql .= " {$this->limit}";
-        }
-                
+        $sql = $this->makeQuery();
+      
         try{
             // Prepare Statement
-            $stmt = $this->pdo->prepare($this->sql);
+            $stmt = $this->pdo->prepare($sql);
             // Execute Statement
             $stmt->execute($this->params);
+            // Fetch Data
+            $result = $stmt->fetch();
         }catch(PDOException $e){
             echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
         }
-
-        // Fetch Data
-        $result = $stmt->fetch();
         
         // Reset Statemment Helpers
         $this->reset();
@@ -199,13 +156,14 @@ class Model extends Database
     // Insert Into Database
     public function insert(array $data):int
     {
-        $columns = implode(', ', array_keys($data));
-        $placeholders = implode(', ', array_fill(0, count($data), '?'));
-
-        $this->sql = "INSERT INTO {$this->table} ($columns) VALUES ($placeholders)";
+        // Make Query
+        $this->action = 'insert';
+        $this->columns = array_keys($data);
+        $this->placeholders = implode(', ', array_fill(0, count($data), '?'));
+        $sql = $this->makeQuery();
 
         // Prepare Statement
-        $stmt = $this->pdo->prepare($this->sql);
+        $stmt = $this->pdo->prepare($sql);
         // Execute Statement
         $stmt->execute(array_values($data));
 
@@ -218,53 +176,42 @@ class Model extends Database
     // Replace Data
     public function replace($data)
     {
-        $columns = implode(', ', array_keys($data));
-        $placeholders = implode(', ', array_fill(0, count($data), '?'));
-
-        $this->sql = "REPLACE INTO {$this->table} ($columns) VALUES ($placeholders)";
+        // Make Query
+        $this->action = 'replace';
+        $this->columns = array_keys($data);
+        $this->placeholders = implode(', ', array_fill(0, count($data), '?'));
+        $sql = $this->makeQuery();
 
         // Prepare Statement
-        $stmt = $this->pdo->prepare($this->sql);
+        $stmt = $this->pdo->prepare($sql);
         // Execute Statement
         $stmt->execute(array_values($data));
 
         // Reset Statemment Helpers
         $this->reset();
         // Return
-        return $this->pdo->lastInsertId();
+        return (int) $this->pdo->lastInsertId();
     }
 
     // Update Data Into Table
     public function update(array $data):int
     {
+        $this->action = 'delete';
         // Get Params
         $set = [];
         foreach ($data as $column => $value) {
-            $set[] = "$column = ?";
+            $this->columns[] = "{$column} = ?";
+            // $set[] = "$column = ?";
             $params[] = $value;
         }
 
         // Get Params
         $toUpdate = array_merge($params, $this->params);
-        
-        try {
-            // SQL Statement
-            $this->sql = "UPDATE {$this->table} SET " . implode(', ', $set);
-            // Check Where Statement
-            if ($this->where || $this->filter){
-                if($this->where){
-                    $this->sql .= ' WHERE ' . implode(" {$this->operator} ", $this->where);
-                }elseif($this->filter){
-                    $this->sql .= ' WHERE ' . implode(" {$this->operator} ", $this->filter);
-                }
-            }else{
-                throw new ModelExceptions("Where Clause Not Found: {$this->sql}", 85006);
-            }
-        }catch(ModelExceptions $e) {
-            echo $e->message();
-        }
+
+        // Make SQL
+        $sql = $this->makeQuery();
         // Prepare Statement
-        $stmt = $this->pdo->prepare($this->sql);
+        $stmt = $this->pdo->prepare($sql);
         // Execute Statement
         $stmt->execute($toUpdate);
         // Get Result
@@ -276,26 +223,13 @@ class Model extends Database
     }
 
     // Delete Column
-    public function pop()
+    public function pop():int
     {
-        $result = 0;
+        // Set Action
+        $this->action = 'pop';
         
-        try {
-            // SQL Statement
-            $this->sql = "DELETE FROM {$this->table}";
-            // Check Where Statement
-            if($this->where || $this->filter){
-                if($this->where){
-                    $this->sql .= ' WHERE ' . implode(" {$this->operator} ", $this->where);
-                }elseif($this->filter){
-                    $this->sql .= ' WHERE ' . implode(" {$this->operator} ", $this->filter);
-                }                
-            }else{
-                throw new ModelExceptions("Where Clause Not Found: {$this->sql}", 85006);
-            }
-        }catch(ModelExceptions $e){
-            echo $e->message();
-        }
+        // Make Query
+        $this->makeQuery();
         // Prepare Statement
         $stmt = $this->pdo->prepare($this->sql);        
         // Execute Statement
@@ -306,7 +240,7 @@ class Model extends Database
         $this->reset();
 
         // Return
-        return $result;
+        return $result ?: 0;
     }
 
     // Generate UUID
@@ -326,10 +260,10 @@ class Model extends Database
     #############################
 
     // Add a Column Definition
-    public function addColumn(string $name, string $type, bool $notNull = true, bool $autoIncrement = false, ?string $default = null):object
+    public function addColumn(string $name, string $type, bool $null = false, bool $autoIncrement = false, ?string $default = null):object
     {
         $column = "`{$name}` {$type}";
-        $column .= $notNull ? " NOT NULL" : '';
+        $column .= !$null ? " NOT NULL" : " NULL";
         $column .= $autoIncrement ? " AUTO_INCREMENT" : '';
         $column .= $default ? " DEFAULT '{$default}'" : '';
         $this->columns[] = $column;
@@ -337,30 +271,38 @@ class Model extends Database
     }
 
     // Set Primary Key
-    public function primaryKey(string $key):object
+    public function primary(string $key):object
     {
-        $this->primaryKey = $key;
+        try {
+            if(!$this->primary){
+                $this->primary = $key;
+            }else{
+                throw new ModelExceptions("Multiple Primary Key is Not Allowed", 85010);
+            }
+        } catch (ModelExceptions $e) {
+            echo $e->message();
+        }
         return $this;
     }
 
     // Set Unique Key
-    public function uniqueKey(string $key):object
+    public function unique(string $key):object
     {
-        $this->uniqueKey = $key;
+        $this->unique[] = "UNIQUE({$key})";
         return $this;
     }
 
     // Set Index Key
-    public function indexKey(string $key):object
+    public function index(string $key):object
     {
-        $this->indexKey = $key;
+        $this->index[] = "KEY({$key})";
         return $this;
     }
 
     // Set Fulltext Key
-    public function fulltextKey(string $key):object
+    public function fulltext(string $key):object
     {
-        $this->fulltextKey = $key;
+        $this->fulltext[] = "FULLTEXT({$key})";
         return $this;
     }
 
@@ -398,30 +340,30 @@ class Model extends Database
             echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
         }
         // Create SQL Statement
-        $this->sql = "CREATE TABLE `{$this->table}` (\n";
-        $this->sql .= implode(",\n", $this->columns);
+        $this->sql = "CREATE TABLE `{$this->table}` (";
+        $this->sql .= implode(",", $this->columns);
 
         // Primary Key if Exist
-        if ($this->primaryKey){
-            $this->sql .= ",\nPRIMARY KEY (`{$this->primaryKey}`)";
+        if ($this->primary){
+            $this->sql .= ", PRIMARY KEY ({$this->primary})";
         }
         
         // Unique Key if Exist
-        if ($this->uniqueKey){
-            $this->sql .= ",\nUNIQUE KEY (`{$this->uniqueKey}`)";
+        if ($this->unique){
+            $this->sql .= ", " . implode(", ", $this->unique);
         }
 
         // Index Key if Exist
-        if ($this->indexKey){
-            $this->sql .= ",\nKEY (`{$this->indexKey}`)";
+        if ($this->index){
+            $this->sql .= ", " . implode(", ", $this->index);
         }
 
         // Fulltext Key if Exist
-        if ($this->fulltextKey){
-            $this->sql .= ",\nFULLTEXT KEY (`{$this->fulltextKey}`)";
+        if ($this->fulltext){
+            $this->sql .= ", " . implode(", ", $this->fulltext);
         }
 
-        $this->sql .= "\n)\nENGINE={$this->engine} DEFAULT CHARSET={$this->charset} COLLATE={$this->collate};";
+        $this->sql .= ") ENGINE={$this->engine} DEFAULT CHARSET={$this->charset} COLLATE={$this->collate};";
 
         // Prepare Statement
         $stmt = $this->pdo->prepare($this->sql);
