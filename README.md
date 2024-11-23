@@ -47,10 +47,9 @@ Model::config([
     'host'      =>  'localhost',
     'name'      =>  'database_name',
     'user'      =>  'database_user_here',
-    'password'  =>  'database_password_here',
+    'password'  =>  'database_password_here',,
+    'object'    =>  false
 ]);
-
-Model::$object = false;
 ```
 You can ignore the driver key if you are using the mysql driver. Mysql is the default driver in this system.
  ```php

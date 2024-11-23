@@ -33,15 +33,19 @@ class Driver
     // Database Password
     protected static String $password;
 
+    // Database Fetch as Object or Array
+    protected static String $object;
+
     // Configure DB Model
     public static function config(array $config):void
     {
-        self::$driver   = $config['driver'] ?? 'mysql';
-        self::$host     = $config['host'] ?? 'localhost';
-        self::$name     = $config['name'] ?? '';
-        self::$port     = (Int) ($config['port'] ?? 3306);
-        self::$user     = $config['user'] ?? 'no_user';
-        self::$password = $config['password'] ?? 'no_password';
+        self::$driver   =   $config['driver'] ?? 'mysql';
+        self::$host     =   $config['host'] ?? 'localhost';
+        self::$name     =   $config['name'] ?? '';
+        self::$port     =   (Int) ($config['port'] ?? 3306);
+        self::$user     =   $config['user'] ?? 'no_user';
+        self::$password =   $config['password'] ?? 'no_password';
+        self::$object   =   $config['object'] ?? true;
     }
 
     // Get Driver Class

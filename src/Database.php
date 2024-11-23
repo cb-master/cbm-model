@@ -95,8 +95,6 @@ class Database Extends Driver
     // Query Action
     protected String $action = '';
 
-    public static bool $object = true;
-
     // Initiate Database
     public function __construct()
     {
