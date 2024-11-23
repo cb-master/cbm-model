@@ -95,22 +95,18 @@ class Database Extends Driver
     // Query Action
     protected String $action = '';
 
-    // Fetch As Object Constant
-    public const OBJECT = 'object';
-
-    // Fetch As Array Constant
-    public const ASSOC = 'assoc';
+    public static bool $object = true;
 
     // Initiate Database
-    public function __construct(String $fetch = self::OBJECT)
+    public function __construct()
     {
         // Get Fetch Method
-        $default_fetch = ($fetch != 'assoc') ? PDO::FETCH_OBJ : PDO::FETCH_ASSOC;
+        $fetch = (self::$object) ? PDO::FETCH_OBJ : PDO::FETCH_ASSOC;
 
         // Get Connection
         try{
             $this->pdo = new PDO($this->dsn(), $this->user(), $this->password());
-            $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, $default_fetch);
+            $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, $fetch);
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->pdo->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, false);
         }catch(PDOException $e){
@@ -140,12 +136,13 @@ class Database Extends Driver
     }
 
     // Connection
-    public static function conn(string $fetch = self::OBJECT):Null|Object
+    public static function conn():Null|Object
     {
         if(!self::$instance)
         {
-            self::$instance = new Static($fetch);
+            self::$instance = new Static();
         }
+
         return self::$instance;
     }
 

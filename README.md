@@ -39,7 +39,19 @@ Model::config([
 ]);
 
 ```
+By default fetching data as object. But you can fetch data as array.
+ ```php
+// Config DB Model
+Model::config([
+    'driver'    =>  'mysql',
+    'host'      =>  'localhost',
+    'name'      =>  'database_name',
+    'user'      =>  'database_user_here',
+    'password'  =>  'database_password_here',
+]);
 
+Model::$object = false;
+```
 You can ignore the driver key if you are using the mysql driver. Mysql is the default driver in this system.
  ```php
 // Config DB Model
