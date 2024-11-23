@@ -79,11 +79,8 @@ This project provides a base for any PHP application needing a reliable and effi
 
 ### Get All Data From Table
 ```php
-// Get All Data With Select *. Returning Array With Objects
+// Get All Data With Select *
 Model::conn()->table('table_name')->select()->get();
-
-// Get All Data With Select *. To Return as Array
-Model::conn(Model::ASSOSC)->table('table_name')->select()->get();
 
 // Get All Data With Selected Columns
 Model::conn()->table('table_name')->select('column_1, column_2, column_3, .....')->get();
