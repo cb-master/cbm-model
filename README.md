@@ -64,13 +64,16 @@ Model::config([
 ## Usage
 This project provides a base for any PHP application needing a reliable and efficient database model, especially useful for billing and cloud services. For detailed usage examples, please see the given method implementation below.
 
-### Get All Data From Table
+### Get Data From Table
 ```php
 // Get All Data With Select *
 Model::conn()->table('table_name')->select()->get();
 
 // Get All Data With Selected Columns
 Model::conn()->table('table_name')->select('column_1, column_2, column_3, .....')->get();
+
+// Get Single Data
+Model::conn()->table('table_name')->select()->single();
 
 ```
 
