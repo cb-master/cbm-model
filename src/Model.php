@@ -134,6 +134,7 @@ class Model extends Database
     // Execute Database For Single Value
     public function single():object|array
     {
+        $result = [];
         $sql = $this->makeQuery();
       
         try{
@@ -149,6 +150,7 @@ class Model extends Database
         
         // Reset Statemment Helpers
         $this->reset();
+
         // Return
         return $result ?: [];
     }
@@ -174,7 +176,7 @@ class Model extends Database
     }
 
     // Replace Data
-    public function replace($data)
+    public function replace($data):int
     {
         // Make Query
         $this->action = 'replace';
@@ -187,10 +189,12 @@ class Model extends Database
         // Execute Statement
         $stmt->execute(array_values($data));
 
+        $result = $stmt->rowCount();
+
         // Reset Statemment Helpers
         $this->reset();
         // Return
-        return (int) $this->pdo->lastInsertId();
+        return (int) $result;
     }
 
     // Update Data Into Table
@@ -295,7 +299,7 @@ class Model extends Database
     // Set Index Key
     public function index(string $key):object
     {
-        $this->index[] = "INDEX({$key})";
+        $this->index[] = "KEY({$key})";
         return $this;
     }
 
@@ -374,5 +378,38 @@ class Model extends Database
         // Reset Values
         $this->reset();
         return $result;
+    }
+
+    // Get Tables
+    public function table_exist(string $table)
+    {
+        $this->sql = "SHOW TABLES";
+
+        // Prepare Statement
+        $stmt = $this->pdo->prepare($this->sql);
+        $stmt->execute();
+
+        // Execute Statement
+        $result = $stmt->fetchAll();
+
+        $result = json_decode(json_encode($result), true);
+
+        $found = false;
+
+        foreach($result as $key => $res){
+            foreach($res as $k => $val){
+                if($val == $table){
+                    $found = true;
+                    break;
+                }
+            }
+            if($found){
+                break;
+            }
+        }
+        
+        // Reset Values
+        $this->reset();
+        return $found;
     }
 }
