@@ -295,7 +295,7 @@ class Model extends Database
     // Set Index Key
     public function index(string $key):object
     {
-        $this->index[] = "KEY({$key})";
+        $this->index[] = "INDEX({$key})";
         return $this;
     }
 
