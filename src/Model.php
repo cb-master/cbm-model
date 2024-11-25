@@ -396,13 +396,8 @@ class Model extends Database
 
         $found = false;
 
-        foreach($result as $key => $res){
-            foreach($res as $k => $val){
-                if($val == $table){
-                    $found = true;
-                    break;
-                }
-            }
+        foreach($result as $res){
+            $found = in_array($table, $res) ? true : false;
             if($found){
                 break;
             }
