@@ -65,17 +65,20 @@ class Driver
         } catch (ModelExceptions $e) {
             echo $e->message();
         }
-
-        $class = "\\CBM\\Model\\Driver\\".ucfirst(self::$driver);
         // Check Driver Exist
         try {
-            if(!class_exists($class)){
-                throw new ModelExceptions("Driver '".self::$driver."' Does Not Exist!", 85012);
+            if(isset(self::$driver)){
+                $class = "\\CBM\\Model\\Driver\\".ucfirst(self::$driver);
+                if(!class_exists("\\CBM\\Model\\Driver\\".ucfirst(self::$driver))){
+                    throw new ModelExceptions("Driver '".self::$driver."' Does Not Exist!", 85012);
+                }
+            }else{
+                throw new ModelExceptions("Database Driver Does Not Exist!", 85012);
             }
         } catch (ModelExceptions $e) {
             echo $e->message();
         }
-        return $class;
+        return $class ?? '';
     }
 
     // Database DSN
