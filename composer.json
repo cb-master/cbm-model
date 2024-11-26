@@ -1,6 +1,7 @@
 {
     "name": "cb-master/cbm-model",
     "description": "A database model for cloud bill master application use.",
+    "keywords": ["Database", "PHP Database", "Database Model", "CBM DB Model"],
     "type": "package",
     "license": "MIT",
     "autoload": {
