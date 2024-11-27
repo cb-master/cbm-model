@@ -13,6 +13,7 @@ namespace CBM\Model;
 
 use PDO;
 use PDOException;
+use CBM\ModelHelper\Resource;
 use CBM\ModelHelper\ModelExceptions;
 
 class Database Extends Driver
@@ -103,20 +104,22 @@ class Database Extends Driver
 
         // Get Connection
         try{
+            // Connect
             $this->pdo = new PDO($this->dsn(), $this->user(), $this->password());
+            // Set Attributes
             $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, $fetch);
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->pdo->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, false);
         }catch(PDOException $e){
-            exit('<body style="margin:0;"><div style="height:100vh;position:relative;"><h1 style="text-align:center;color:#ef3a3a; position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);margin:0;">Connection Error!<br>['.$e->getCode().'] - '.$e->getMessage().'</h1></div></body>');
+            echo Resource::connection_error();
+            exit();
         }
     }
 
     // Begin Transection
     public static function beginTransaction()
     {
-        self::conn();
-        return self::$instance->pdo->beginTransaction();
+        return self::conn()->pdo->beginTransaction();
     }
 
     // Commit Transection

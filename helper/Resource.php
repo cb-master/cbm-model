@@ -14,40 +14,8 @@ namespace CBM\ModelHelper;
 final class Resource
 {
     // Config File Resources
-    public static function config_resources():string
+    public static function connection_error():string
     {
-        return "<?php
-    /**
-     * APP Name:        Laika DB Model
-     * APP Provider:    Showket Ahmed
-     * APP Link:        https://cloudbillmaster.com
-     * APP Contact:     riyadtayf@gmail.com
-     * APP Version:     1.0.0
-     * APP Company:     Cloud Bill Master Ltd.
-     */
-
-    // Forbidden Access
-    defined('ROOTPATH') || http_response_code(403).die('403 Forbidden Access!');
-
-    // Database Host
-    define('DB_HOST', 'localhost');
-
-    // Database Port
-    define('DB_PORT', 3306);
-
-    // Database Driver
-    define('DB_DRIVER', 'mysql');
-
-    // Database Name
-    define('DB_NAME', 'test');
-
-    // Database User
-    define('DB_USER', 'root');
-
-    // Database Password
-    define('DB_PASSWORD', '');
-
-    // Database Fetch Limit
-    define('LIMIT', 20);";
+        return "<body style=\"margin:0;\">\n<div style=\"height:100vh;position:relative;\">\n<h1 style=\"text-align:center;color:#ef3a3a; position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);margin:0;\">!! Database Connection Error !!</h1>\n</div>\n</body>";
     }
 }
