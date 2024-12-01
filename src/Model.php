@@ -17,10 +17,12 @@ use CBM\ModelHelper\ModelExceptions;
 class Model extends Database
 {
     // Set Table
-    public function table(string $table):object
+    public static function table(string $table):object
     {
-        $this->table = $table;
-        return $this;
+        self::conn()->table = $table;
+        return self::$instance;
+        // $this->table = $table;
+        // return $this;
     }
 
     ############################
@@ -253,7 +255,7 @@ class Model extends Database
         $time = substr(str_replace('.', '', microtime(true)), -6);
         $uid = 'uuid-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.$time;
         // Check Already Exist & Return
-        if(self::conn()->table($table)->select()->filter($column, '=', $uid)->single()){
+        if(self::table($table)->select()->filter($column, '=', $uid)->single()){
             return self::uuid($table, $column);
         }
         return strtoupper($uid);
@@ -264,7 +266,7 @@ class Model extends Database
     #############################
 
     // Add a Column Definition
-    public function addColumn(string $name, string $type, bool $null = false, bool $autoIncrement = false, ?string $default = null):object
+    public function column(string $name, string $type, bool $null = false, bool $autoIncrement = false, ?string $default = null):object
     {
         $column = "`{$name}` {$type}";
         $column .= !$null ? " NOT NULL" : " NULL";
@@ -381,12 +383,22 @@ class Model extends Database
     }
 
     // Get Tables
-    public function table_exist(string $table)
+    public function exist()
     {
+        // Check Table Method Exist
+        try {
+            if (!$this->table) {
+                throw new PDOException("Table Name Must Be Defined.", 85006);
+            }
+            // Reset Values 
+        }catch(PDOException $e){
+            echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
+        }
+
         $this->sql = "SHOW TABLES";
 
         // Prepare Statement
-        $stmt = $this->pdo->prepare($this->sql);
+        $stmt = self::conn()->pdo->prepare($this->sql);
         $stmt->execute();
 
         // Execute Statement
@@ -397,7 +409,7 @@ class Model extends Database
         $found = false;
 
         foreach($result as $res){
-            $found = in_array($table, $res) ? true : false;
+            $found = in_array($this->table, $res) ? true : false;
             if($found){
                 break;
             }

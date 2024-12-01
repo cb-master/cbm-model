@@ -19,7 +19,7 @@ use CBM\ModelHelper\ModelExceptions;
 class Database Extends Driver
 {    
     // PDO Instance
-    private static $instance = null;
+    protected static $instance = null;
 
     // PDO Connection
     protected $pdo;
