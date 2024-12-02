@@ -17,6 +17,9 @@ use CBM\ModelHelper\ModelExceptions;
 class Model extends Database
 {
     // Set Table
+    /**
+     * @param string $table - Required Argument
+     */
     public static function table(string $table):object
     {
         self::conn()->table = $table;
@@ -28,6 +31,9 @@ class Model extends Database
     ############################
 
     // Set Slect Columns
+    /**
+     * @param string $columns - Default is '*'
+     */
     public function select(string $columns = '*'):object
     {
         $this->action = 'select';
@@ -36,6 +42,9 @@ class Model extends Database
     }
 
     // Set Group By
+    /**
+     * @param string $columns - Required Argument
+     */
     public function group(string $columns)
     {
         $this->group = $columns;
@@ -43,6 +52,9 @@ class Model extends Database
     }
 
     // Set Having
+    /**
+     * @param string $column - Required Argument
+     */
     public function having(string $column)
     {
         $this->having = $column;
@@ -50,6 +62,11 @@ class Model extends Database
     }
 
     // Set Join
+    /**
+     * @param string $table - Required Argument
+     * @param string $condition - Required Argument
+     * @param string $type - Default is 'LEFT'
+     */
     public function join(string $table, string $condition, string $type = 'LEFT'):object
     {
         $type = strtoupper($type);
@@ -58,6 +75,12 @@ class Model extends Database
     }
 
     // Set Where
+    /**
+     * @param string $column - Required Argument
+     * @param string $compare - Required Argument
+     * @param int|string $value - Required Argument
+     * @param ?string $operator - Default is null
+     */
     public function filter(string $column, string $compare, Int|String $value, ?String $operator = null):object
     {
         $this->filter[] = "{$column} {$compare} ?" . ($operator ? " {$operator}": "");
@@ -66,13 +89,24 @@ class Model extends Database
     }
 
     // Set Where
-    public function between(string $column, string $min, string $max, ?String $operator = null):object
+    /**
+     * @param string $column - Required Argument
+     * @param int|string $min - Required Argument
+     * @param int|string $max - Required Argument
+     * @param ?string $operator - Default is null
+     */
+    public function between(string $column, int|string $min, int|string $max, ?String $operator = null):object
     {
         $this->between[] = "{$column} BETWEEN {$min} AND {$max}" . ($operator ? " {$operator}": "");
         return $this;
     }
 
     // Set Where
+    /**
+     * @param array $where - Required Argument
+     * @param string $compare - Default is '='
+     * @param string $operator - Default is 'AND'
+     */
     public function where(array $where, string $compare = '=', string $operator = 'AND'):object // $operator = AND / OR / && / ||
     {
         $this->operator = $operator;
@@ -84,14 +118,21 @@ class Model extends Database
     }
 
     // Set Order
-    public function order(string $column, string $direction = 'ASC'):object
+    /**
+     * @param string $column - Required Argument
+     * @param string $ascending - Default is true for Ascending. Use false for Descending
+     */
+    public function order(string $column, bool $ascending = true):object
     {
-        $direction = ucwords($direction);
+        $direction = $ascending ? 'ASC' : 'DESC';
         $this->order = "ORDER BY {$column} {$direction}";
         return $this;
     }
 
     // Set Limit
+    /**
+     * @param int|string $limit - Default is 20
+     */
     public function limit(Int|String $limit = 20):object
     {
         $limit = (Int) $limit;
@@ -156,6 +197,9 @@ class Model extends Database
     }
 
     // Insert Into Database
+    /**
+     * @param array $data - Required Argument as Associative Array
+     */
     public function insert(array $data):int
     {
         // Make Query
@@ -176,7 +220,10 @@ class Model extends Database
     }
 
     // Replace Data
-    public function replace($data):int
+    /**
+     * @param array $data - Required Argument as Associative Array
+     */
+    public function replace(array $data):int
     {
         // Make Query
         $this->action = 'replace';
@@ -198,6 +245,9 @@ class Model extends Database
     }
 
     // Update Data Into Table
+    /**
+     * @param array $data - Required Argument as Associative Array
+     */
     public function update(array $data):int
     {
         $this->action = 'delete';
@@ -248,6 +298,10 @@ class Model extends Database
     }
 
     // Generate UUID
+    /**
+     * @param string $table - Required Argument like 'table'
+     * @param string $column - Required Argument like 'table_column_name'
+     */
     public static function uuid(string $table, string $column)
     {
         $time = substr(str_replace('.', '', microtime(true)), -6);
@@ -264,7 +318,20 @@ class Model extends Database
     #############################
 
     // Add a Column Definition
-    public function column(string $name, string $type, bool $null = false, bool $autoIncrement = false, ?string $default = null):object
+    /**
+     * @param string $name - Required Argument like 'table_column_name'
+     * @param string $type - Required Argument like 'int(10)' or 'varchar(255)' or 'longtext'
+     * @param bool $null - Default Value is false. Use true For Defined as Null Column
+     * @param bool $autoIncrement - Default Value is false. Use true For Auto Increment ID
+     * @param ?string $default - Default Value is null. Use 'Any Value' to Set Default Value
+     */
+    public function column(
+        string $name,
+        string $type,
+        bool $null = false,
+        bool $autoIncrement = false,
+        ?string $default = null
+        ):object
     {
         $column = "`{$name}` {$type}";
         $column .= !$null ? " NOT NULL" : " NULL";
@@ -275,11 +342,14 @@ class Model extends Database
     }
 
     // Set Primary Key
-    public function primary(string $key):object
+    /**
+     * @param string $column - Required Argument like 'table_column_name'
+     */
+    public function primary(string $column):object
     {
         try {
             if(!$this->primary){
-                $this->primary = $key;
+                $this->primary = $column;
             }else{
                 throw new ModelExceptions("Multiple Primary Key is Not Allowed", 85010);
             }
@@ -290,27 +360,39 @@ class Model extends Database
     }
 
     // Set Unique Key
-    public function unique(string $key):object
+    /**
+     * @param string $column - Required Argument like 'table_column_name'
+     */
+    public function unique(string $column):object
     {
-        $this->unique[] = "UNIQUE({$key})";
+        $this->unique[] = "UNIQUE({$column})";
         return $this;
     }
 
     // Set Index Key
-    public function index(string $key):object
+    /**
+     * @param string $column - Required Argument like 'table_column_name'
+     */
+    public function index(string $column):object
     {
-        $this->index[] = "KEY({$key})";
+        $this->index[] = "KEY({$column})";
         return $this;
     }
 
     // Set Fulltext Key
-    public function fulltext(string $key):object
+    /**
+     * @param string $column - Required Argument like 'table_column_name'
+     */
+    public function fulltext(string $column):object
     {
-        $this->fulltext[] = "FULLTEXT({$key})";
+        $this->fulltext[] = "FULLTEXT({$column})";
         return $this;
     }
 
     // Set Engine
+    /**
+     * @param ?string $engine - Default Value is null for 'InnoDB'
+     */
     public function engine(?string $engine = null):object
     {
         $this->engine = $engine ?: $this->engine;
@@ -318,6 +400,9 @@ class Model extends Database
     }
 
     // Set Charset
+    /**
+     * @param ?string $charset - Default Value is null for 'utf8mb4'
+     */
     public function charset(?string $charset = null):object
     {
         $this->charset = $charset ?: $this->charset;
@@ -325,6 +410,9 @@ class Model extends Database
     }
 
     // Set Collate
+    /**
+     * @param ?string $collate - Default Value is null for 'utf8mb4_general_ci'
+     */
     public function collate(?string $collate = null):object
     {
         $this->collate = $collate ?: $this->collate;

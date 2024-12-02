@@ -13,11 +13,8 @@ namespace CBM\Model\Abstracts;
 
 abstract class AbstractDriver
 {
-    // Databse Instance
-    // abstract public function instance():object;
-
     // Driver DSN
-    abstract public static function dsn(String $host, Int|String|Bool $port, ?String $name):string;
+    abstract public static function dsn(string $host, string $name, int|string|bool|null $port = null):string;
 
     // Database User
     abstract public static function user(?string $user):string|null;

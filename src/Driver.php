@@ -40,6 +40,9 @@ class Driver
     private static $triggered = false;
 
     // Configure DB Model
+    /**
+     * @param array $config - Required Argument
+     */
     public static function config(array $config):void
     {
         // Trigger Enable
