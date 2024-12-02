@@ -21,8 +21,6 @@ class Model extends Database
     {
         self::conn()->table = $table;
         return self::$instance;
-        // $this->table = $table;
-        // return $this;
     }
 
     ############################

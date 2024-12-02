@@ -67,13 +67,13 @@ This project provides a base for any PHP application needing a reliable and effi
 ### Get Data From Table
 ```php
 // Get All Data With Select *
-Model::conn()->table('table_name')->select()->get();
+Model::table('table_name')->select()->get();
 
 // Get All Data With Selected Columns
-Model::conn()->table('table_name')->select('column_1, column_2, column_3, .....')->get();
+Model::table('table_name')->select('column_1, column_2, column_3, .....')->get();
 
 // Get Single Data
-Model::conn()->table('table_name')->select()->single();
+Model::table('table_name')->select()->single();
 
 ```
 
@@ -81,8 +81,8 @@ Model::conn()->table('table_name')->select()->single();
 Additional method to use is limit()
 ```php
 // Get Data for Default Limit 20
-Model::conn()->table('table_name')->select()->limit()->get();
+Model::table('table_name')->select()->limit()->get();
 
 // Custom Limit Set
-Model::conn()->table('table_name')->select()->limit(40)->get();
+Model::table('table_name')->select()->limit(40)->get();
 ```
