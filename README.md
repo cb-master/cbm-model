@@ -35,8 +35,20 @@ Model::config([
     'host'      =>  'localhost',
     'name'      =>  'database_name',
     'user'      =>  'database_user_here',
-    'password'  =>  'database_password_here',
+    'password'  =>  'database_password_here'
 ]);
+
+// Add 'port' Key if you are not using the default port.
+/**
+ * Model::config([
+ *  'driver'    =>  'mysql',
+ *  'host'      =>  'localhost',
+ *  'port'      =>  12345,
+ *  'name'      =>  'database_name',
+ *  'user'      =>  'database_user_here',
+ *  'password'  =>  'database_password_here',
+ * ])
+ * */
 
 ```
 By default fetching data as object. But you can fetch data as array.
