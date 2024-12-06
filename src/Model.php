@@ -77,9 +77,9 @@ class Model extends Database
     // Set Where
     /**
      * @param string $column - Required Argument
-     * @param string $compare - Required Argument
-     * @param int|string $value - Required Argument
-     * @param ?string $operator - Default is null
+     * @param string $compare - Required Argument. Example '=', 'ON', '>', '<'
+     * @param int|string $value - Required Argument.
+     * @param ?string $operator - Default is null. Example 'AND', 'OR'
      */
     public function filter(string $column, string $compare, Int|String $value, ?String $operator = null):object
     {
