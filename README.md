@@ -16,19 +16,23 @@ Cloud Bill Master Singleton Database Model is a PHP-based project that implement
 * <b>PDO (PHP Data Objects)</b>: Utilized for secure database access with prepared statements to prevent SQL injection.</br>
 
 ## Installation
+Use Without Composer:
+Download the source code and copy it in your application directory. For manual installation, please remove the require vendor autoload file and use the db_model.php file from the repository.
+```php
+require_once('path/cbm-model/db_model.php');
+```
 Install with composer:
 ```bash
 composer require cb-master/cb-model
 ```
+
 Configure your database settings in your PHP application page top section.
 ```php
-// Require Config File Where Database Variables or CONSTANTS are Provided
-require_once("./config.php");
+use CBM\Model\Model;
 
 // Require Autoload File
 require_once("./vendor/autoload.php");
 
-use CBM\Model\Model;
 // Config DB Model
 Model::config([
     'driver'    =>  'mysql',
