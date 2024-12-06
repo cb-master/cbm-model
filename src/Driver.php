@@ -87,7 +87,7 @@ class Driver
     // Database DSN
     protected function dsn():String
     {
-        return self::driver()::dsn(self::$host, self::$port, self::$name);
+        return self::driver()::dsn(self::$host, self::$name, self::$port);
     }
 
     // Database User

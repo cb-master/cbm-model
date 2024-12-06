@@ -111,6 +111,8 @@ class Database Extends Driver
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->pdo->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, false);
         }catch(PDOException $e){
+            echo '<pre>';
+            print_r($e);
             echo Resource::connection_error();
             exit();
         }
