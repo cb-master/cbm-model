@@ -24,7 +24,7 @@ class Mariadb Extends AbstractDriver
      */
     public static function dsn(string $host, string $name, int|string|bool|null $port = null):string
     {
-        try {
+        try{
             if(!$host){
                 throw new ModelExceptions("Database Host Error", 85001);
             }
@@ -34,7 +34,7 @@ class Mariadb Extends AbstractDriver
             if(!$port){
                 throw new ModelExceptions("Database Port Error", 85013);
             }
-        } catch (ModelExceptions $e) {
+        }catch(ModelExceptions $e){
             echo $e->message();
         }
         return "mysql:host={$host}:{$port};dbname={$name}";

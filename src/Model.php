@@ -298,17 +298,13 @@ class Model extends Database
     }
 
     // Generate UUID
-    /**
-     * @param string $table - Required Argument like 'table'
-     * @param string $column - Required Argument like 'table_column_name'
-     */
-    public static function uuid(string $table, string $column)
+    public function uuid()
     {
         $time = substr(str_replace('.', '', microtime(true)), -6);
         $uid = 'uuid-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.$time;
         // Check Already Exist & Return
-        if(self::table($table)->select()->filter($column, '=', $uid)->single()){
-            return self::uuid($table, $column);
+        if(self::table(self::$instance->table)->select()->filter('uuid', '=', $uid)->single()){
+            return self::uuid();
         }
         return strtoupper($uid);
     }
@@ -334,9 +330,17 @@ class Model extends Database
         ):object
     {
         $column = "`{$name}` {$type}";
-        $column .= !$null ? " NOT NULL" : " NULL";
+        $column .= $null ? "" : " NOT NULL";
         $column .= $autoIncrement ? " AUTO_INCREMENT" : '';
-        $column .= $default ? " DEFAULT '{$default}'" : '';
+        
+        if($default){
+            if(str_contains($default, 'timestamp')){
+                $column .= $default ? " DEFAULT {$default}" : '';
+            }else{
+                $column .= $default ? " DEFAULT '{$default}'" : '';
+            }
+        }
+        // $column .= $default ? " DEFAULT {$default}" : '';
         $this->columns[] = $column;
         return $this;
     }
