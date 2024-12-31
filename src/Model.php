@@ -132,8 +132,7 @@ class Model extends Database
      */
     public function limit(Int|String $limit = 20):object
     {
-        $limit = (Int) $limit;
-
+        // Get Page Number
         $pagenumber = (int) ($_GET['page'] ?? 0) + 1;
         // Get Limit
         $limit = (int) $limit;
