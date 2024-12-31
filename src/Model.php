@@ -130,18 +130,32 @@ class Model extends Database
     /**
      * @param int|string $limit - Default is 20
      */
-    public function limit(Int|String $limit = 20):object
+    public function limit(int|string $limit = 20):object
     {
-        // Get Page Number
-        $pagenumber = (int) ($_GET['page'] ?? 0) + 1;
-        // Get Limit
         $limit = (int) $limit;
+        // Set Query
+        $this->limit = "LIMIT {$limit}";
+        return $this;
+    }
+
+    // Set Offset
+    /**
+     * @param int|string $offset - Default is 0
+     */
+    public function offset(int|string $offset = 0):object
+    {
+        $offset = (int) $offset;
+        $this->offset =  ($offset > 0) ? $offset : 0;
+        // Get Page Number
+        // $pagenumber = (int) ($_GET['page'] ?? 0) + 1;
+        // Get Limit
+        // $limit = (int) $limit;
         
         // Set Offset
-        $this->offset = ($pagenumber > 0 ) ? (($pagenumber - 1) * $limit) : 0;
+        // $this->offset = ($pagenumber > 0 ) ? (($pagenumber - 1) * $limit) : 0;
 
         // Set Query
-        $this->limit = "LIMIT {$limit} OFFSET {$this->offset}";
+        $this->limit = "OFFSET {$this->offset}";
         return $this;
     }
 
