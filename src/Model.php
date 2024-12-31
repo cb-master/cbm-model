@@ -319,6 +319,16 @@ class Model extends Database
         return strtoupper($uid);
     }
 
+    // Custom Query
+    public static function execute(string $query, array $data = []):int|array
+    {
+        // Prepare Statement
+        $stmt = self::conn()->pdo->prepare($query);
+        // Execute Statement
+        $stmt->execute($data);
+        return str_contains($query, "SELECT ") || str_contains($query, "select ") ? $stmt->fetchAll() : $stmt->rowCount();
+    }
+
     #############################
     ###### TABLE FUNCTIONS ######
     #############################
