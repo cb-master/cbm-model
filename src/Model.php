@@ -319,13 +319,17 @@ class Model extends Database
         return strtoupper($uid);
     }
 
-    // Custom Query
-    public static function execute(string $query, array $data = []):int|array
+    // Execute Custom Query 
+    /**
+     * @param string $query - Required Argument as Custom Query
+     * @param array $params - Optional Arguments if Query has named arguments
+     */
+    public static function execute(string $query, array $params = []):int|array
     {
         // Prepare Statement
         $stmt = self::conn()->pdo->prepare($query);
         // Execute Statement
-        $stmt->execute($data);
+        $stmt->execute($params);
         return str_contains($query, "SELECT ") || str_contains($query, "select ") ? $stmt->fetchAll() : $stmt->rowCount();
     }
 
