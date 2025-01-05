@@ -101,6 +101,20 @@ class Model extends Database
 
     // Set Where
     /**
+     * @param string $column - Required Argument
+     * @param int|string $min - Required Argument
+     * @param int|string $max - Required Argument
+     * @param ?string $compare - Default is null
+     */
+    public function notin(string $column, int|string $min, int|string $max, ?string $compare = null):object
+    {
+        $this->between[] = "{$column} NOT BETWEEN ? AND ?" . ($compare ? " {$compare}": "");
+        $this->params = array_merge($this->params, [$min, $max]);
+        return $this;
+    }
+
+    // Set Where
+    /**
      * @param array $where - Required Argument
      * @param string $operator - Default is '='
      * @param string $compare - Default is 'AND'
