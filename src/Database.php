@@ -39,6 +39,9 @@ class Database Extends Driver
     // Join
     protected Array $join = [];
 
+    // Compare
+    protected String $compare = '';
+
     // Where
     protected Array $where = [];
 
@@ -170,7 +173,7 @@ class Database Extends Driver
             $this->sql .= $this->join ? ' ' . implode(' ', $this->join) : '';
             // Where SQL
             if($this->where){
-                $this->sql .= $this->where ? ' WHERE ' . implode(" ", $this->where) : '';
+                $this->sql .= $this->where ? ' WHERE ' . implode(" {$this->compare} ", $this->where) : '';
             }
             // Filter SQL
             if($this->filter){
@@ -207,7 +210,7 @@ class Database Extends Driver
             if ($this->where || $this->filter || $this->between){
                 // Where SQL
                 if($this->where){
-                    $this->sql .= $this->where ? ' WHERE ' . implode(" ", $this->where) : '';
+                    $this->sql .= $this->where ? ' WHERE ' . implode(" {$this->compare} ", $this->where) : '';
                 }
                 // Filter SQL
                 if($this->filter){
@@ -229,7 +232,7 @@ class Database Extends Driver
             if ($this->where || $this->filter || $this->between){
                 // Where SQL
                 if($this->where){
-                    $this->sql .= $this->where ? ' WHERE ' . implode(" ", $this->where) : '';
+                    $this->sql .= $this->where ? ' WHERE ' . implode(" {$this->compare} ", $this->where) : '';
                 }
                 // Filter SQL
                 if($this->filter){
@@ -254,6 +257,7 @@ class Database Extends Driver
         $this->table        =   '';
         $this->group        =   '';
         $this->having       =   '';
+        $this->compare      =   '';
         $this->where        =   [];
         $this->filter       =   [];
         $this->between      =   [];

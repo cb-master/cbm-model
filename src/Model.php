@@ -81,7 +81,7 @@ class Model extends Database
     public function filter(string $column, string $operator, Int|String $value, ?String $compare = null):object
     {
         $this->filter[] = "{$column} {$operator} ?" . ($compare ? " {$compare}": "");
-        $this->params[] = $value;
+        $this->params = array_merge($this->params, [$value]);
         return $this;
     }
 
@@ -121,9 +121,10 @@ class Model extends Database
      */
     public function where(array $where, string $operator = '=', string $compare = 'AND'):object
     {
+        $this->compare = $compare;
         foreach($where as $key=>$value){
-            $this->where[] = "{$key} {$operator} ?" . ($compare ? " {$compare}": "");
-            $this->params[] = array_merge($this->params, [$value]);
+            $this->where[] = "{$key} {$operator} ?";
+            $this->params = array_merge($this->params, [$value]);
         }
         return $this;
     }
