@@ -243,10 +243,9 @@ class Database Extends Driver
                 throw new ModelExceptions("Where Clause Not Found: {$this->sql}", 85006);
             }
         }
-        $sql = $this->sql;
-        echo $sql;
+
         // Return Query
-        return $sql;
+        return $this->sql;
     }
 
     // Reset SQL Statement
