@@ -48,9 +48,6 @@ class Database Extends Driver
     // Filter
     protected Array $between = [];
 
-    // Operator
-    protected String $operator = '';
-
     // Order
     protected String $order = '';
 
@@ -172,34 +169,16 @@ class Database Extends Driver
             // Join SQL
             $this->sql .= $this->join ? ' ' . implode(' ', $this->join) : '';
             // Where SQL
-            try {
-                if(!$this->between || !$this->filter){
-                    $this->sql .= $this->where ? ' WHERE ' . implode(" {$this->operator} ", $this->where) : '';
-                }else{
-                    throw new PDOException("You Can't Use filter(), where() & between() Together!", 85002);
-                }
-            }catch(PDOException $e) {
-                echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
+            if($this->where){
+                $this->sql .= $this->where ? ' WHERE ' . implode(" ", $this->where) : '';
             }
             // Filter SQL
-            try {
-                if(!$this->where || !$this->between){
-                    $this->sql .= $this->filter ? ' WHERE ' . implode(" ", $this->filter) : '';
-                }else{
-                    throw new PDOException("You Can't Use filter(), where() & between() Together!", 85002);
-                }
-            }catch(PDOException $e) {
-                echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
+            if($this->filter){
+                $this->sql .= $this->filter ? ' WHERE ' . implode(" ", $this->filter) : '';
             }
             // Between SQL
-            try {
-                if(!$this->where || !$this->filter){
-                    $this->sql .= $this->between ? ' WHERE ' . implode(" ", $this->between) : '';
-                }else{
-                    throw new PDOException("You Can't Use filter(), where() & between() Together!", 85002);
-                }
-            }catch(PDOException $e) {
-                echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
+            if($this->between){
+                $this->sql .= $this->between ? ' WHERE ' . implode(" ", $this->between) : '';
             }
             // Group SQL
             $this->sql .= $this->group ? " GROUP BY {$this->group}" : '';
@@ -220,16 +199,23 @@ class Database Extends Driver
             $columns = implode(', ', array_values($this->columns));
             $this->sql = "REPLACE INTO {$this->table} ({$columns}) VALUES ({$this->placeholders})";
         }
-        // SQL For Delete
-        elseif($this->action === 'delete'){
+        // SQL For Update
+        elseif($this->action === 'update'){
             $columns = implode(', ', array_values($this->columns));
             $this->sql = "UPDATE {$this->table} SET " . implode(', ', $this->columns);
             // Check Where Statement
-            if ($this->where || $this->filter){
+            if ($this->where || $this->filter || $this->between){
+                // Where SQL
                 if($this->where){
-                    $this->sql .= ' WHERE ' . implode(" {$this->operator} ", $this->where);
-                }elseif($this->filter){
-                    $this->sql .= ' WHERE ' . implode(" ", $this->filter);
+                    $this->sql .= $this->where ? ' WHERE ' . implode(" ", $this->where) : '';
+                }
+                // Filter SQL
+                if($this->filter){
+                    $this->sql .= $this->filter ? ' WHERE ' . implode(" ", $this->filter) : '';
+                }
+                // Between SQL
+                if($this->between){
+                    $this->sql .= $this->between ? ' WHERE ' . implode(" ", $this->between) : '';
                 }
             }else{
                 throw new ModelExceptions("Where Clause Not Found: {$this->sql}", 85006);
@@ -240,18 +226,27 @@ class Database Extends Driver
             $columns = implode(', ', array_values($this->columns));
             $this->sql = "DELETE FROM {$this->table}";
             // Check Where Statement
-            if ($this->where || $this->filter){
+            if ($this->where || $this->filter || $this->between){
+                // Where SQL
                 if($this->where){
-                    $this->sql .= ' WHERE ' . implode(" {$this->operator} ", $this->where);
-                }elseif($this->filter){
-                    $this->sql .= ' WHERE ' . implode(" ", $this->filter);
+                    $this->sql .= $this->where ? ' WHERE ' . implode(" ", $this->where) : '';
+                }
+                // Filter SQL
+                if($this->filter){
+                    $this->sql .= $this->filter ? ' WHERE ' . implode(" ", $this->filter) : '';
+                }
+                // Between SQL
+                if($this->between){
+                    $this->sql .= $this->between ? ' WHERE ' . implode(" ", $this->between) : '';
                 }
             }else{
                 throw new ModelExceptions("Where Clause Not Found: {$this->sql}", 85006);
             }
         }
+        $sql = $this->sql;
+        echo $sql;
         // Return Query
-        return $this->sql;
+        return $sql;
     }
 
     // Reset SQL Statement
@@ -268,7 +263,6 @@ class Database Extends Driver
         $this->select       =   '*';
         $this->order        =   '';
         $this->limit        =   0;
-        $this->operator     =   '';
         $this->offset       =   0;
         $this->sql          =   '';
         $this->columns      =   [];

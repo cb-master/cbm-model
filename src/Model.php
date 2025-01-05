@@ -74,13 +74,13 @@ class Model extends Database
     // Set Where
     /**
      * @param string $column - Required Argument
-     * @param string $compare - Required Argument. Example '=', 'ON', '>', '<'
+     * @param string $operator - Required Argument. Example '=', 'ON', '>', '<'
      * @param int|string $value - Required Argument.
-     * @param ?string $operator - Default is null. Example 'AND', 'OR'
+     * @param ?string $compare - Default is null. Example 'AND', 'OR'
      */
-    public function filter(string $column, string $compare, Int|String $value, ?String $operator = null):object
+    public function filter(string $column, string $operator, Int|String $value, ?String $compare = null):object
     {
-        $this->filter[] = "{$column} {$compare} ?" . ($operator ? " {$operator}": "");
+        $this->filter[] = "{$column} {$operator} ?" . ($compare ? " {$compare}": "");
         $this->params[] = $value;
         return $this;
     }
@@ -90,26 +90,26 @@ class Model extends Database
      * @param string $column - Required Argument
      * @param int|string $min - Required Argument
      * @param int|string $max - Required Argument
-     * @param ?string $operator - Default is null
+     * @param ?string $compare - Default is null
      */
-    public function between(string $column, int|string $min, int|string $max, ?String $operator = null):object
+    public function between(string $column, int|string $min, int|string $max, ?string $compare = null):object
     {
-        $this->between[] = "{$column} BETWEEN {$min} AND {$max}" . ($operator ? " {$operator}": "");
+        $this->between[] = "{$column} BETWEEN ? AND ?" . ($compare ? " {$compare}": "");
+        $this->params = array_merge($this->params, [$min, $max]);
         return $this;
     }
 
     // Set Where
     /**
      * @param array $where - Required Argument
-     * @param string $compare - Default is '='
-     * @param string $operator - Default is 'AND'
+     * @param string $operator - Default is '='
+     * @param string $compare - Default is 'AND'
      */
-    public function where(array $where, string $compare = '=', string $operator = 'AND'):object // $operator = AND / OR / && / ||
+    public function where(array $where, string $operator = '=', string $compare = 'AND'):object
     {
-        $this->operator = $operator;
         foreach($where as $key=>$value){
-            $this->where[] = "{$key} {$compare} ?";
-            $this->params[] = $value;
+            $this->where[] = "{$key} {$operator} ?" . ($compare ? " {$compare}": "");
+            $this->params[] = array_merge($this->params, [$value]);
         }
         return $this;
     }
@@ -146,13 +146,6 @@ class Model extends Database
     {
         $offset = (int) $offset;
         $this->offset =  ($offset > 0) ? $offset : 0;
-        // Get Page Number
-        // $pagenumber = (int) ($_GET['page'] ?? 0) + 1;
-        // Get Limit
-        // $limit = (int) $limit;
-        
-        // Set Offset
-        // $this->offset = ($pagenumber > 0 ) ? (($pagenumber - 1) * $limit) : 0;
 
         // Set Query
         $this->limit = "OFFSET {$this->offset}";
@@ -165,19 +158,16 @@ class Model extends Database
         // Make Query
         $sql = $this->makeQuery();
 
-        try{
-            // Prepare Statement
-            $stmt = $this->pdo->prepare($sql);
-            // Execute Statement
-            $stmt->execute($this->params);
-            // Fetch Data
-            $result = $stmt->fetchAll();
-        }catch(PDOException $e){
-            echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
-        }
+        // Prepare Statement
+        $stmt = $this->pdo->prepare($sql);
+        // Execute Statement
+        $stmt->execute($this->params);
+        // Fetch Data
+        $result = $stmt->fetchAll();
 
         // Reset Statemment Helpers
         $this->reset();
+        
         // Return
         return $result ?? [];
     }
@@ -188,16 +178,12 @@ class Model extends Database
         $result = [];
         $sql = $this->makeQuery();
       
-        try{
-            // Prepare Statement
-            $stmt = $this->pdo->prepare($sql);
-            // Execute Statement
-            $stmt->execute($this->params);
-            // Fetch Data
-            $result = $stmt->fetch();
-        }catch(PDOException $e){
-            echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
-        }
+        // Prepare Statement
+        $stmt = $this->pdo->prepare($sql);
+        // Execute Statement
+        $stmt->execute($this->params);
+        // Fetch Data
+        $result = $stmt->fetch();
         
         // Reset Statemment Helpers
         $this->reset();
@@ -225,6 +211,7 @@ class Model extends Database
 
         // Reset Statemment Helpers
         $this->reset();
+
         // Return
         return (int) $this->pdo->lastInsertId();
     }
@@ -250,6 +237,7 @@ class Model extends Database
 
         // Reset Statemment Helpers
         $this->reset();
+        
         // Return
         return (int) $result;
     }
@@ -260,12 +248,10 @@ class Model extends Database
      */
     public function update(array $data):int
     {
-        $this->action = 'delete';
+        $this->action = 'update';
         // Get Params
-        $set = [];
         foreach ($data as $column => $value) {
             $this->columns[] = "{$column} = ?";
-            // $set[] = "$column = ?";
             $params[] = $value;
         }
 
