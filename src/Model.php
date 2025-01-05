@@ -146,7 +146,7 @@ class Model extends Database
      */
     public function limit(int|string $limit = 20):object
     {
-        $limit = (int) $limit;
+        // $limit = (int) $limit;
         // Set Query
         $this->limit = "LIMIT {$limit}";
         return $this;

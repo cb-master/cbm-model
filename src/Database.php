@@ -22,7 +22,7 @@ class Database Extends Driver
     protected $pdo;
 
     // Offset
-    protected $offset = 0;
+    protected String $offset = '';
 
     // Table
     protected String $table = '';
@@ -52,7 +52,7 @@ class Database Extends Driver
     protected String $order = '';
 
     // Limit
-    protected Int $limit = 0;
+    protected String $limit = '';
 
     // Parameters
     protected Array $params = [];
@@ -262,8 +262,8 @@ class Database Extends Driver
         $this->params       =   [];
         $this->select       =   '*';
         $this->order        =   '';
-        $this->limit        =   0;
-        $this->offset       =   0;
+        $this->limit        =   '';
+        $this->offset       =   '';
         $this->sql          =   '';
         $this->columns      =   [];
         $this->placeholders =   '';
