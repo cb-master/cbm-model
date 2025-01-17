@@ -163,7 +163,7 @@ class Model extends Database
         $this->offset =  ($offset > 0) ? $offset : 0;
 
         // Set Query
-        $this->limit = "OFFSET {$this->offset}";
+        $this->offset = "OFFSET {$this->offset}";
         return $this;
     }
 

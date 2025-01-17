@@ -170,7 +170,7 @@ class Database Extends Driver
         if($this->action === 'select'){
             $this->sql = "SELECT {$this->select} FROM {$this->table}";
             // Join SQL
-            $this->sql .= $this->join ? ' ' . implode(' ', $this->join) : '';
+            $this->sql .= $this->join ? ' ' . implode(' ', $this->join) : "";
             // Where SQL
             if($this->where){
                 $this->sql .= $this->where ? ' WHERE ' . implode(" {$this->compare} ", $this->where) : '';
@@ -184,13 +184,15 @@ class Database Extends Driver
                 $this->sql .= $this->between ? ' WHERE ' . implode(" ", $this->between) : '';
             }
             // Group SQL
-            $this->sql .= $this->group ? " GROUP BY {$this->group}" : '';
+            $this->sql .= $this->group ? " GROUP BY {$this->group}" : "";
             // Having SQL
-            $this->sql .= $this->having ? " HAVING {$this->having}" : '';
+            $this->sql .= $this->having ? " HAVING {$this->having}" : "";
             // Order SQL
-            $this->sql .= $this->order ? " {$this->order}" : '';
+            $this->sql .= $this->order ? " {$this->order}" : "";
             // Limit SQL
-            $this->sql .= $this->limit ? " {$this->limit}" : '';
+            $this->sql .= $this->limit ? " {$this->limit}" : "";
+            // Offset SQL
+            $this->sql .= $this->offset ? " {$this->offset}" : "";
         }
         // SQL For Insert
         elseif($this->action === 'insert'){
