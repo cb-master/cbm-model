@@ -108,10 +108,9 @@ class Model extends Database
      * @param int|string $max - Required Argument
      * @param ?string $compare - Default is 'AND
      */
-    public function notin(string $column, int|string $min, int|string $max, string $compare = 'AND'):object
+    public function not():object
     {
-        $this->where .= "{$column} NOT BETWEEN ? AND ? {$compare} ";
-        $this->params = array_merge($this->params, [$min, $max]);
+        $this->not = "NOT";
         return $this;
     }
 
@@ -267,15 +266,12 @@ class Model extends Database
         }
 
         // Get Params
-        $toUpdate = array_merge($params, $this->params);
-
-        // Make SQL
-        $sql = "UPDATE {$this->makeUpdateQuery()}";
+        $params = array_merge($params, $this->params);
 
         // Prepare Statement
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->pdo->prepare("UPDATE {$this->makeUpdateQuery()}");
         // Execute Statement
-        $stmt->execute($toUpdate);
+        $stmt->execute($params);
         // Get Result
         $result = (int) $stmt->rowCount();
         // Reset Statemment Helpers
@@ -343,26 +339,9 @@ class Model extends Database
      * @param bool $autoIncrement - Default Value is false. Use true For Auto Increment ID
      * @param ?string $default - Default Value is null. Use 'Any Value' to Set Default Value
      */
-    public function column(
-        string $name,
-        string $type,
-        bool $null = false,
-        bool $autoIncrement = false,
-        ?string $default = null
-        ):object
+    public function column(string $name, string $type):object
     {
         $column = "`{$name}` {$type}";
-        $column .= $null ? "" : " NOT NULL";
-        $column .= $autoIncrement ? " AUTO_INCREMENT" : '';
-        
-        if($default){
-            if(str_contains($default, 'timestamp')){
-                $column .= $default ? " DEFAULT {$default}" : '';
-            }else{
-                $column .= $default ? " DEFAULT '{$default}'" : '';
-            }
-        }
-        // $column .= $default ? " DEFAULT {$default}" : '';
         $this->columns[] = $column;
         return $this;
     }
@@ -379,7 +358,7 @@ class Model extends Database
             }else{
                 throw new ModelExceptions("Multiple Primary Key is Not Allowed", 85010);
             }
-        } catch (ModelExceptions $e) {
+        }catch(ModelExceptions $e){
             echo $e->message();
         }
         return $this;
@@ -451,11 +430,11 @@ class Model extends Database
         try {
             // Check Table & Columns are Exist
             if (!$this->table || !$this->columns) {
-                throw new PDOException("Table Name & Columns Must Be Defined.", 85006);
+                throw new ModelExceptions("Table Name & Columns Must Be Defined.", 85006);
             }
             // Reset Values 
-        }catch(PDOException $e){
-            echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
+        }catch(ModelExceptions $e){
+            echo $e->message();
         }
         // Create SQL Statement
         $this->sql = "CREATE TABLE `{$this->table}` (";
@@ -500,11 +479,11 @@ class Model extends Database
         // Check Table Method Exist
         try {
             if (!$this->table) {
-                throw new PDOException("Table Name Must Be Defined.", 85006);
+                throw new ModelExceptions("Table Name Must Be Defined.", 85006);
             }
             // Reset Values 
-        }catch(PDOException $e){
-            echo "[" . $e->getCode() . "] - " . $e->getMessage() . ". Line: " . $e->getFile() . ":" . $e->getLine();
+        }catch(ModelExceptions $e){
+            echo $e->message();
         }
 
         $this->sql = "SHOW TABLES";
@@ -518,17 +497,14 @@ class Model extends Database
 
         $result = json_decode(json_encode($result), true);
 
-        $found = false;
-
         foreach($result as $res){
-            $found = in_array($this->table, $res) ? true : false;
-            if($found){
-                break;
+            if(in_array($this->table, $res)){
+                return true;
             }
         }
         
         // Reset Values
         $this->reset();
-        return $found;
+        return false;
     }
 }

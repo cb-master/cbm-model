@@ -15,5 +15,5 @@ Model::config([
 ]);
 
 echo '<pre>';
-print_r(Model::table('test')->where(['id'=>2],'>')->filter('id','<',4)->pop());
+print_r(Model::table('test')->not()->where(['id'=>10],'<')->update(['email'=>'new emails']));
 echo '</pre>';

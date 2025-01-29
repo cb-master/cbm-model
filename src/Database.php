@@ -45,6 +45,9 @@ class Database Extends Driver
     // Where
     protected string $where = '';
 
+    // NOT
+    protected string $not = '';
+
     // Order
     protected String $order = '';
 
@@ -186,8 +189,8 @@ class Database Extends Driver
             throw new ModelExceptions("Where Clause Not Found: {$this->sql}", 85006);
         }
         // Where SQL
-        $this->sql = "DELETE FROM {$this->table}";
-        $this->sql .= $this->where ? " WHERE {$this->where} " : "";
+        $where = $this->not ? "WHERE NOT" : "WHERE";
+        $this->sql .= $this->where ? " {$where} {$this->where} " : "";
         $this->sql = trim($this->sql);
         $this->sql = trim($this->sql, 'AND');
         $this->sql = trim($this->sql, 'OR');
@@ -203,7 +206,8 @@ class Database Extends Driver
             throw new ModelExceptions("Where Clause Not Found: {$this->sql}", 85006);
         }
         // Where SQL
-        $this->sql .= $this->where ? " WHERE {$this->where} " : "";
+        $where = $this->not ? "WHERE NOT" : "WHERE";
+        $this->sql .= $this->where ? " {$where} {$this->where} " : "";
         $this->sql = trim($this->sql);
         $this->sql = trim($this->sql, 'AND');
         $this->sql = trim($this->sql, 'OR');
@@ -218,6 +222,7 @@ class Database Extends Driver
         $this->having       =   '';
         $this->compare      =   '';
         $this->where        =   '';
+        $this->not          =   '';
         $this->join         =   [];
         $this->params       =   [];
         $this->select       =   '*';
