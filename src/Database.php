@@ -43,13 +43,7 @@ class Database Extends Driver
     protected String $compare = '';
 
     // Where
-    protected Array $where = [];
-
-    // Filter
-    protected Array $filter = [];
-
-    // Filter
-    protected Array $between = [];
+    protected string $where = '';
 
     // Order
     protected String $order = '';
@@ -89,9 +83,6 @@ class Database Extends Driver
 
     // SQL Command
     protected String $sql = '';
-
-    // Query Action
-    protected String $action = '';
 
     // Initiate Database
     public function __construct()
@@ -146,17 +137,9 @@ class Database Extends Driver
         return self::$instance;
     }
 
-    // Make Query
-    public function makeQuery():string
+    // Make Select Query
+    protected function makeSelectQuery():string
     {
-        try {
-            if(!$this->action){
-                throw new ModelExceptions("SQL Building Error!", 85008);
-            }
-        }catch(ModelExceptions $e){
-            echo $e->message();
-        }
-
         // Check $this->table Exist
         try {
             if(!$this->table){
@@ -166,90 +149,64 @@ class Database Extends Driver
             echo $e->message();
         }
 
-        // SQL For Select
-        if($this->action === 'select'){
-            $this->sql = "SELECT {$this->select} FROM {$this->table}";
-            // Join SQL
-            $this->sql .= $this->join ? ' ' . implode(' ', $this->join) : "";
-            // Where SQL
-            if($this->where){
-                $this->sql .= $this->where ? ' WHERE ' . implode(" {$this->compare} ", $this->where) : '';
-            }
-            // Filter SQL
-            if($this->filter){
-                $this->sql .= $this->filter ? ' WHERE ' . implode(" ", $this->filter) : '';
-            }
-            // Between SQL
-            if($this->between){
-                $this->sql .= $this->between ? ' WHERE ' . implode(" ", $this->between) : '';
-            }
-            // Group SQL
-            $this->sql .= $this->group ? " GROUP BY {$this->group}" : "";
-            // Having SQL
-            $this->sql .= $this->having ? " HAVING {$this->having}" : "";
-            // Order SQL
-            $this->sql .= $this->order ? " {$this->order}" : "";
-            // Limit SQL
-            $this->sql .= $this->limit ? " {$this->limit}" : "";
-            // Offset SQL
-            $this->sql .= $this->offset ? " {$this->offset}" : "";
-        }
-        // SQL For Insert
-        elseif($this->action === 'insert'){
-            $columns = implode(', ', array_values($this->columns));
-            $this->sql = "INSERT INTO {$this->table} ({$columns}) VALUES ({$this->placeholders})";
-        }
-        // SQL For Replace
-        elseif($this->action === 'replace'){
-            $columns = implode(', ', array_values($this->columns));
-            $this->sql = "REPLACE INTO {$this->table} ({$columns}) VALUES ({$this->placeholders})";
-        }
-        // SQL For Update
-        elseif($this->action === 'update'){
-            $columns = implode(', ', array_values($this->columns));
-            $this->sql = "UPDATE {$this->table} SET " . implode(', ', $this->columns);
-            // Check Where Statement
-            if ($this->where || $this->filter || $this->between){
-                // Where SQL
-                if($this->where){
-                    $this->sql .= $this->where ? ' WHERE ' . implode(" {$this->compare} ", $this->where) : '';
-                }
-                // Filter SQL
-                if($this->filter){
-                    $this->sql .= $this->filter ? ' WHERE ' . implode(" ", $this->filter) : '';
-                }
-                // Between SQL
-                if($this->between){
-                    $this->sql .= $this->between ? ' WHERE ' . implode(" ", $this->between) : '';
-                }
-            }else{
-                throw new ModelExceptions("Where Clause Not Found: {$this->sql}", 85006);
-            }
-        }
-        // SQL For Delete
-        elseif($this->action === 'pop'){
-            $columns = implode(', ', array_values($this->columns));
-            $this->sql = "DELETE FROM {$this->table}";
-            // Check Where Statement
-            if ($this->where || $this->filter || $this->between){
-                // Where SQL
-                if($this->where){
-                    $this->sql .= $this->where ? ' WHERE ' . implode(" {$this->compare} ", $this->where) : '';
-                }
-                // Filter SQL
-                if($this->filter){
-                    $this->sql .= $this->filter ? ' WHERE ' . implode(" ", $this->filter) : '';
-                }
-                // Between SQL
-                if($this->between){
-                    $this->sql .= $this->between ? ' WHERE ' . implode(" ", $this->between) : '';
-                }
-            }else{
-                throw new ModelExceptions("Where Clause Not Found: {$this->sql}", 85006);
-            }
-        }
+        $this->sql = "{$this->table}";
+        // Join SQL
+        $this->sql .= $this->join ? ' ' . implode(' ', $this->join) : "";
+        // Where SQL
+        $this->sql .= $this->where ? " WHERE {$this->where} " : "";
+        $this->sql = trim($this->sql);
+        $this->sql = trim($this->sql, 'AND');
+        $this->sql = trim($this->sql, 'OR');
+        // Group SQL
+        $this->sql .= $this->group ? " GROUP BY {$this->group}" : "";
+        // Having SQL
+        $this->sql .= $this->having ? " HAVING {$this->having}" : "";
+        // Order SQL
+        $this->sql .= $this->order ? " {$this->order}" : "";
+        // Limit SQL
+        $this->sql .= $this->limit ? " {$this->limit}" : "";
+        // Offset SQL
+        $this->sql .= $this->offset ? " {$this->offset}" : "";
+        return $this->sql;
+    }
 
-        // Return Query
+    // Make Insert Query
+    protected function makeInsertQuery():string
+    {
+        $columns = implode(', ', array_values($this->columns));
+        return "{$this->table} ({$columns}) VALUES ({$this->placeholders})";
+    }
+
+    // Make Update Query
+    protected function makeUpdateQuery():string
+    {
+        $this->sql = "{$this->table} SET " . implode(', ', $this->columns);
+        // Check Where Statement
+        if(!$this->where){
+            throw new ModelExceptions("Where Clause Not Found: {$this->sql}", 85006);
+        }
+        // Where SQL
+        $this->sql = "DELETE FROM {$this->table}";
+        $this->sql .= $this->where ? " WHERE {$this->where} " : "";
+        $this->sql = trim($this->sql);
+        $this->sql = trim($this->sql, 'AND');
+        $this->sql = trim($this->sql, 'OR');
+        return $this->sql;
+    }
+
+    // Make Delete Query
+    protected function makePopQuery():string
+    {
+        $this->sql = "{$this->table}";
+        // Check Where Statement
+        if(!$this->where){
+            throw new ModelExceptions("Where Clause Not Found: {$this->sql}", 85006);
+        }
+        // Where SQL
+        $this->sql .= $this->where ? " WHERE {$this->where} " : "";
+        $this->sql = trim($this->sql);
+        $this->sql = trim($this->sql, 'AND');
+        $this->sql = trim($this->sql, 'OR');
         return $this->sql;
     }
 
@@ -260,9 +217,7 @@ class Database Extends Driver
         $this->group        =   '';
         $this->having       =   '';
         $this->compare      =   '';
-        $this->where        =   [];
-        $this->filter       =   [];
-        $this->between      =   [];
+        $this->where        =   '';
         $this->join         =   [];
         $this->params       =   [];
         $this->select       =   '*';

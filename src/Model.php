@@ -31,12 +31,12 @@ class Model extends Database
     /**
      * @param string $columns - Default is '*'
      */
-    public function select(string $columns = '*'):object
-    {
-        $this->action = 'select';
-        $this->select = $columns;
-        return $this;
-    }
+    // public function select(string $columns = '*'):object
+    // {
+    //     $this->action = 'select';
+    //     $this->select = $columns;
+    //     return $this;
+    // }
 
     // Set Group By
     /**
@@ -74,13 +74,14 @@ class Model extends Database
     // Set Where
     /**
      * @param string $column - Required Argument
-     * @param string $operator - Required Argument. Example '=', 'ON', '>', '<'
+     * @param string $operator - Required Argument. Example '=', 'IN', '>', '<'
      * @param int|string $value - Required Argument.
-     * @param ?string $compare - Default is null. Example 'AND', 'OR'
+     * @param ?string $compare - Default is null. Example 'AND', 'IN'
      */
-    public function filter(string $column, string $operator, Int|String $value, ?String $compare = null):object
+    public function filter(string $column, string $operator, int|string $value, string $compare = 'AND'):object
     {
-        $this->filter[] = "{$column} {$operator} ?" . ($compare ? " {$compare}": "");
+        $compare = strtoupper($compare);
+        $this->where .= "{$column} {$operator} ? {$compare} ";
         $this->params = array_merge($this->params, [$value]);
         return $this;
     }
@@ -90,11 +91,12 @@ class Model extends Database
      * @param string $column - Required Argument
      * @param int|string $min - Required Argument
      * @param int|string $max - Required Argument
-     * @param ?string $compare - Default is null
+     * @param ?string $compare - Default is 'AND'
      */
-    public function between(string $column, int|string $min, int|string $max, ?string $compare = null):object
+    public function between(string $column, int|string $min, int|string $max, string $compare = 'AND'):object
     {
-        $this->between[] = "{$column} BETWEEN ? AND ?" . ($compare ? " {$compare}": "");
+        $compare = strtoupper($compare);
+        $this->where .= "{$column} BETWEEN ? AND ? {$compare} ";
         $this->params = array_merge($this->params, [$min, $max]);
         return $this;
     }
@@ -104,11 +106,11 @@ class Model extends Database
      * @param string $column - Required Argument
      * @param int|string $min - Required Argument
      * @param int|string $max - Required Argument
-     * @param ?string $compare - Default is null
+     * @param ?string $compare - Default is 'AND
      */
-    public function notin(string $column, int|string $min, int|string $max, ?string $compare = null):object
+    public function notin(string $column, int|string $min, int|string $max, string $compare = 'AND'):object
     {
-        $this->between[] = "{$column} NOT BETWEEN ? AND ?" . ($compare ? " {$compare}": "");
+        $this->where .= "{$column} NOT BETWEEN ? AND ? {$compare} ";
         $this->params = array_merge($this->params, [$min, $max]);
         return $this;
     }
@@ -121,9 +123,9 @@ class Model extends Database
      */
     public function where(array $where, string $operator = '=', string $compare = 'AND'):object
     {
-        $this->compare = $compare;
+        $compare = strtoupper($compare);
         foreach($where as $key=>$value){
-            $this->where[] = "{$key} {$operator} ?";
+            $this->where .= "{$key} {$operator} ? {$compare} ";
             $this->params = array_merge($this->params, [$value]);
         }
         return $this;
@@ -167,14 +169,14 @@ class Model extends Database
         return $this;
     }
 
-    // Execute Database
-    public function get():array
+    // Get All From Database
+    /**
+     * @param string $columns - Default is '*'
+     */
+    public function get(string $columns = '*'):array
     {
-        // Make Query
-        $sql = $this->makeQuery();
-
         // Prepare Statement
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->pdo->prepare("SELECT {$columns} FROM {$this->makeSelectQuery()}");
         // Execute Statement
         $stmt->execute($this->params);
         // Fetch Data
@@ -187,14 +189,14 @@ class Model extends Database
         return $result ?? [];
     }
 
-    // Execute Database For Single Value
-    public function single():object|array
-    {
-        $result = [];
-        $sql = $this->makeQuery();
-      
+    // Get Single Value From Database
+    /**
+     * @param string $columns - Default is '*'
+     */
+    public function single(string $columns = '*'):object|array
+    {     
         // Prepare Statement
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->pdo->prepare("SELECT {$columns} FROM {$this->makeSelectQuery()}");
         // Execute Statement
         $stmt->execute($this->params);
         // Fetch Data
@@ -213,14 +215,11 @@ class Model extends Database
      */
     public function insert(array $data):int
     {
-        // Make Query
-        $this->action = 'insert';
         $this->columns = array_keys($data);
         $this->placeholders = implode(', ', array_fill(0, count($data), '?'));
-        $sql = $this->makeQuery();
 
         // Prepare Statement
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->pdo->prepare("INSERT INTO {$this->makeInsertQuery()}");
         // Execute Statement
         $stmt->execute(array_values($data));
 
@@ -238,13 +237,11 @@ class Model extends Database
     public function replace(array $data):int
     {
         // Make Query
-        $this->action = 'replace';
         $this->columns = array_keys($data);
         $this->placeholders = implode(', ', array_fill(0, count($data), '?'));
-        $sql = $this->makeQuery();
 
         // Prepare Statement
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->pdo->prepare("REPLACE INTO {$this->makeInsertQuery()}");
         // Execute Statement
         $stmt->execute(array_values($data));
 
@@ -263,7 +260,6 @@ class Model extends Database
      */
     public function update(array $data):int
     {
-        $this->action = 'update';
         // Get Params
         foreach ($data as $column => $value) {
             $this->columns[] = "{$column} = ?";
@@ -274,7 +270,8 @@ class Model extends Database
         $toUpdate = array_merge($params, $this->params);
 
         // Make SQL
-        $sql = $this->makeQuery();
+        $sql = "UPDATE {$this->makeUpdateQuery()}";
+
         // Prepare Statement
         $stmt = $this->pdo->prepare($sql);
         // Execute Statement
@@ -290,13 +287,8 @@ class Model extends Database
     // Delete Column
     public function pop():int
     {
-        // Set Action
-        $this->action = 'pop';
-        
-        // Make Query
-        $this->makeQuery();
         // Prepare Statement
-        $stmt = $this->pdo->prepare($this->sql);        
+        $stmt = $this->pdo->prepare("DELETE FROM {$this->makePopQuery()}");
         // Execute Statement
         $stmt->execute($this->params);
         $result = (int) $stmt->rowCount();
@@ -314,7 +306,7 @@ class Model extends Database
         $time = substr(str_replace('.', '', microtime(true)), -6);
         $uid = 'uuid-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.$time;
         // Check Already Exist & Return
-        if(self::table(self::$instance->table)->select()->filter('uuid', '=', $uid)->single()){
+        if(self::table(self::$instance->table)->filter('uuid', '=', $uid)->single()){
             return self::uuid();
         }
         return strtoupper($uid);
@@ -325,13 +317,18 @@ class Model extends Database
      * @param string $query - Required Argument as Custom Query
      * @param array $params - Optional Arguments if Query has named arguments
      */
-    public static function execute(string $query, array $params = []):int|array
+    public static function execute(string $query, array $params = []):int|array|object
     {
         // Prepare Statement
         $stmt = self::conn()->pdo->prepare($query);
         // Execute Statement
         $stmt->execute($params);
-        return str_contains($query, "SELECT ") || str_contains($query, "select ") ? $stmt->fetchAll() : $stmt->rowCount();
+        if(preg_match("/select /i", $query)){
+            return $stmt->fetchAll();
+        }elseif(preg_match("/insert /i", $query)){
+            return (int) self::conn()->pdo->lastInsertId();
+        }
+        return (int) $stmt->rowCount();
     }
 
     #############################
