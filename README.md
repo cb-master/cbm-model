@@ -83,13 +83,35 @@ This project provides a base for any PHP application needing a reliable and effi
 ### Get Data From Table
 ```php
 // Get All Data With Select *
-Model::table('table_name')->select()->get();
+Model::table('table_name')->get();
 
 // Get All Data With Selected Columns
-Model::table('table_name')->select('column_1, column_2, column_3, .....')->get();
+Model::table('table_name')->get('column_1, column_2, column_3, .....');
 
 // Get Single Data
-Model::table('table_name')->select()->single();
+Model::table('table_name')->single();
+
+```
+### Get Data From Table
+Use Where Clause. Where clause need 3 arguments {where(array $where, string $operator = '=', string $compare = 'AND')} where 1st one is required.
+```php
+// Get All Data
+Model::table('table_name')->where(['status'=>'active'])->get();
+
+// Get All Data With Multiple Array Keys
+Model::table('table_name')->where(['status'=>'active', 'email'=>'verified'])->get();
+
+// Get Data With Multiple where() method.
+Model::table('table_name')->where(['status'=>'active'])->where(['id'=>10], '>')->get();
+
+```
+Use between() method. Its like where. You also can use it with where() method. Between method needs 3 arguments {between(string $column, int|string $min, int|string $max, string $compare = 'AND')}
+```php
+// Get All Data Between min and max
+Model::table('table_name')->between('id', 1, 10)->get();
+
+// Get All Data Between min and max with multiple condition
+Model::table('table_name')->between('id', 1, 10)->between('id', 50, 60)->get();
 
 ```
 
@@ -97,8 +119,11 @@ Model::table('table_name')->select()->single();
 Additional method to use is limit()
 ```php
 // Get Data for Default Limit 20
-Model::table('table_name')->select()->limit()->get();
+Model::table('table_name')->limit()->get();
+
+// Get Data for Default Limit 20 With Offset
+Model::table('table_name')->limit()->offset(0)->get();
 
 // Custom Limit Set
-Model::table('table_name')->select()->limit(40)->get();
+Model::table('table_name')->limit(40)->get();
 ```
