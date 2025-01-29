@@ -334,10 +334,7 @@ class Model extends Database
     // Add a Column Definition
     /**
      * @param string $name - Required Argument like 'table_column_name'
-     * @param string $type - Required Argument like 'int(10)' or 'varchar(255)' or 'longtext'
-     * @param bool $null - Default Value is false. Use true For Defined as Null Column
-     * @param bool $autoIncrement - Default Value is false. Use true For Auto Increment ID
-     * @param ?string $default - Default Value is null. Use 'Any Value' to Set Default Value
+     * @param string $type - Required Argument like 'int(10) unsigned not null auto_increment ' or 'varchar(255)' or 'longtext'
      */
     public function column(string $name, string $type):object
     {
@@ -461,7 +458,7 @@ class Model extends Database
         }
 
         $this->sql .= ") ENGINE={$this->engine} DEFAULT CHARSET={$this->charset} COLLATE={$this->collate};";
-
+        
         // Prepare Statement
         $stmt = $this->pdo->prepare($this->sql);
 

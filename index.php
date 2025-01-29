@@ -15,5 +15,9 @@ Model::config([
 ]);
 
 echo '<pre>';
-print_r(Model::table('test')->not()->where(['id'=>10],'<')->update(['email'=>'new emails']));
+print_r(Model::table('test1')
+                ->column('id','INT(11) unsigned not null auto_increment')
+                ->column('username','varchar(255) null')
+                ->primary('id')
+                ->create());
 echo '</pre>';
