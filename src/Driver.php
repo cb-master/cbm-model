@@ -47,7 +47,7 @@ class Driver
         // Set Configuration
         self::$driver   =   $config['driver'] ?? 'mysql';
         self::$host     =   $config['host'] ?? 'localhost';
-        self::$name     =   $config['name'] ?? '';
+        self::$name     =   $config['name'] ?? 'sample';
         self::$port     =   (Int) ($config['port'] ?? 3306);
         self::$user     =   $config['user'] ?? 'no_user';
         self::$password =   $config['password'] ?? 'no_password';
