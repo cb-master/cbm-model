@@ -21,5 +21,7 @@
         }
     ],
     "minimum-stability": "stable",
-    "require": {}
+    "require": {
+        "cb-master/cbm-handler": "^1.0"
+    }
 }

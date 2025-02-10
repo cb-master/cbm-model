@@ -27,17 +27,6 @@ class Model extends Database
     ###### CRUD FUNCTIONS ######
     ############################
 
-    // Set Slect Columns
-    /**
-     * @param string $columns - Default is '*'
-     */
-    // public function select(string $columns = '*'):object
-    // {
-    //     $this->action = 'select';
-    //     $this->select = $columns;
-    //     return $this;
-    // }
-
     // Set Group By
     /**
      * @param string $columns - Required Argument
@@ -176,6 +165,7 @@ class Model extends Database
     {
         // Prepare Statement
         $stmt = $this->pdo->prepare("SELECT {$columns} FROM {$this->makeSelectQuery()}");
+        
         // Execute Statement
         $stmt->execute($this->params);
         // Fetch Data
