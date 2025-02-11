@@ -8,8 +8,9 @@
 // Namespace
 namespace CBM\Model;
 
-use PDOException;
 use CBM\ModelHelper\ModelExceptions;
+use CBM\Handler\Error\Error;
+use PDOException;
 
 class Model extends Database
 {
@@ -67,10 +68,10 @@ class Model extends Database
      * @param int|string $value - Required Argument.
      * @param ?string $compare - Default is null. Example 'AND', 'IN'
      */
-    public function filter(string $column, string $operator, int|string $value, string $compare = 'AND'):object
+    public function filter(string $column, string $operator, int|string $value, ?string $compare = null):object
     {
-        $compare = strtoupper($compare);
-        $this->where .= "{$column} {$operator} ? {$compare} ";
+        $compare = $compare ? strtoupper($compare) : $compare;
+        $this->where .= $compare ? "{$column} {$operator} ? {$compare} " : "{$column} {$operator} ? ";
         $this->params = array_merge($this->params, [$value]);
         return $this;
     }
@@ -168,6 +169,10 @@ class Model extends Database
         
         // Execute Statement
         $stmt->execute($this->params);
+        // try {
+        // } catch (Error $er) {
+        //     Error::throw($er);
+        // }
         // Fetch Data
         $result = $stmt->fetchAll();
 
@@ -343,10 +348,10 @@ class Model extends Database
             if(!$this->primary){
                 $this->primary = $column;
             }else{
-                throw new ModelExceptions("Multiple Primary Key is Not Allowed", 85010);
+                throw new Error("Multiple Primary Key is Not Allowed", 85010);
             }
-        }catch(ModelExceptions $e){
-            echo $e->message();
+        }catch(Error $er){
+            Error::throw($er);
         }
         return $this;
     }
@@ -414,14 +419,13 @@ class Model extends Database
     // Generate and Execute the Create Table SQL
     public function create():bool
     {
+        // Check Table & Columns are Exist
         try {
-            // Check Table & Columns are Exist
             if (!$this->table || !$this->columns) {
-                throw new ModelExceptions("Table Name & Columns Must Be Defined.", 85006);
+                throw new Error("Table Name & Columns Must Be Defined.", 85006);
             }
-            // Reset Values 
-        }catch(ModelExceptions $e){
-            echo $e->message();
+        }catch(Error $er){
+            Error::throw($er);
         }
         // Create SQL Statement
         $this->sql = "CREATE TABLE `{$this->table}` (";
@@ -466,11 +470,11 @@ class Model extends Database
         // Check Table Method Exist
         try {
             if (!$this->table) {
-                throw new ModelExceptions("Table Name Must Be Defined.", 85006);
+                throw new Error("Table Name Must Be Defined.", 85006);
             }
             // Reset Values 
-        }catch(ModelExceptions $e){
-            echo $e->message();
+        }catch(Error $er){
+            Error::throw($er);
         }
 
         $this->sql = "SHOW TABLES";

@@ -9,7 +9,7 @@
 namespace CBM\Model\Driver;
 
 use CBM\Model\Abstracts\AbstractDriver;
-use CBM\ModelHelper\ModelExceptions;
+use CBM\Handler\Error\Error;
 
 class Mariadb Extends AbstractDriver
 {
@@ -23,16 +23,16 @@ class Mariadb Extends AbstractDriver
     {
         try{
             if(!$host){
-                throw new ModelExceptions("Database Host Error", 85001);
+                throw new Error("Database Host Error", 85001);
             }
             if(!$name){
-                throw new ModelExceptions("Database Name Error", 85003);
+                throw new Error("Database Name Error", 85003);
             }
             if(!$port){
-                throw new ModelExceptions("Database Port Error", 85013);
+                throw new Error("Database Port Error", 85013);
             }
-        }catch(ModelExceptions $e){
-            echo $e->message();
+        }catch(Error $er){
+            Error::throw($er);
         }
         return "mysql:host={$host}:{$port};dbname={$name}";
     }

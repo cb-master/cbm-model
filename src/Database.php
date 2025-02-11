@@ -8,10 +8,10 @@
 // Namespace
 namespace CBM\Model;
 
-use PDO;
-use PDOException;
 use CBM\ModelHelper\Resource;
-use CBM\ModelHelper\ModelExceptions;
+use CBM\Handler\Error\Error;
+use PDOException;
+use PDO;
 
 class Database Extends Driver
 {    
@@ -146,10 +146,10 @@ class Database Extends Driver
         // Check $this->table Exist
         try {
             if(!$this->table){
-                throw new ModelExceptions("Table Name Not Found!", 85009);
+                throw new Error("Table Name Not Found!", 85009);
             }
-        }catch(ModelExceptions $e){
-            echo $e->message();
+        }catch(Error $er){
+            Error::throw($er);
         }
 
         $this->sql = "{$this->table}";
@@ -185,8 +185,12 @@ class Database Extends Driver
     {
         $this->sql = "{$this->table} SET " . implode(', ', $this->columns);
         // Check Where Statement
-        if(!$this->where){
-            throw new ModelExceptions("Where Clause Not Found: {$this->sql}", 85006);
+        try{
+            if(!$this->where){
+                throw new Error("Where Clause Not Found: {$this->sql}", 85006);
+            }
+        }catch(Error $er) {
+            Error::throw($er);
         }
         // Where SQL
         $where = $this->not ? "WHERE NOT" : "WHERE";
@@ -202,8 +206,12 @@ class Database Extends Driver
     {
         $this->sql = "{$this->table}";
         // Check Where Statement
-        if(!$this->where){
-            throw new ModelExceptions("Where Clause Not Found: {$this->sql}", 85006);
+        try{
+            if(!$this->where){
+                throw new Error("Where Clause Not Found: {$this->sql}", 85006);
+            }
+        }catch(Error $er) {
+            Error::throw($er);
         }
         // Where SQL
         $where = $this->not ? "WHERE NOT" : "WHERE";
