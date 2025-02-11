@@ -8,7 +8,7 @@
 // Namespace
 namespace CBM\Model;
 
-use CBM\ModelHelper\ModelExceptions;
+use CBM\Handler\Error\Error;
 
 class Driver
 {
@@ -60,23 +60,23 @@ class Driver
         // Check Model Configured
         try {
             if(!self::$triggered){
-                throw new ModelExceptions("Database Config Error. Run Model::config() First", 85014);
+                throw new Error("Database Config Error. Run Model::config() First", 85014);
             }
-        } catch (ModelExceptions $e) {
-            echo $e->message();
+        } catch (Error $e) {
+            Error::throw($e);
         }
         // Check Driver Exist
         try {
             if(isset(self::$driver)){
                 $class = "\\CBM\\Model\\Driver\\".ucfirst(self::$driver);
                 if(!class_exists("\\CBM\\Model\\Driver\\".ucfirst(self::$driver))){
-                    throw new ModelExceptions("Driver '".self::$driver."' Does Not Exist!", 85012);
+                    throw new Error("Driver '".self::$driver."' Does Not Exist!", 85012);
                 }
             }else{
-                throw new ModelExceptions("Database Driver Does Not Exist!", 85012);
+                throw new Error("Database Driver Does Not Exist!", 85012);
             }
-        } catch (ModelExceptions $e) {
-            echo $e->message();
+        } catch (Error $e) {
+            Error::throw($e);
         }
         return $class ?? '';
     }
