@@ -20,8 +20,5 @@
             "email":"riyadhtayf@gmail.com"
         }
     ],
-    "minimum-stability": "stable",
-    "require": {
-        "cb-master/cbm-handler": "^1.0"
-    }
+    "minimum-stability": "stable"
 }

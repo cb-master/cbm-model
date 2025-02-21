@@ -8,13 +8,12 @@
 // Namespace
 namespace CBM\Model;
 
-use CBM\ModelHelper\Resource;
-use CBM\Handler\Error\Error;
 use PDOException;
+use Exception;
 use PDO;
 
 class Database Extends Driver
-{    
+{
     // PDO Instance
     protected static $instance = null;
 
@@ -102,8 +101,7 @@ class Database Extends Driver
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->pdo->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, false);
         }catch(PDOException $e){
-            echo Resource::connection_error();
-            exit();
+            throw new Exception($e->getMessage());
         }
     }
 
@@ -142,12 +140,8 @@ class Database Extends Driver
     protected function makeSelectQuery():string
     {
         // Check $this->table Exist
-        try {
-            if(!$this->table){
-                throw new Error("Table Name Not Found!", 85009);
-            }
-        }catch(Error $er){
-            Error::throw($er);
+        if(!$this->table){
+            throw new Exception("Table Name Not Found!", 85009);
         }
 
         $this->sql = "{$this->table}";
@@ -183,12 +177,8 @@ class Database Extends Driver
     {
         $this->sql = "{$this->table} SET " . implode(', ', $this->columns);
         // Check Where Statement
-        try{
-            if(!$this->where){
-                throw new Error("Where Clause Not Found: {$this->sql}", 85006);
-            }
-        }catch(Error $er) {
-            Error::throw($er);
+        if(!$this->where){
+            throw new Exception("Where Clause Not Found: {$this->sql}", 85006);
         }
         // Where SQL
         $where = $this->not ? "WHERE NOT" : "WHERE";
@@ -204,12 +194,8 @@ class Database Extends Driver
     {
         $this->sql = "{$this->table}";
         // Check Where Statement
-        try{
-            if(!$this->where){
-                throw new Error("Where Clause Not Found: {$this->sql}", 85006);
-            }
-        }catch(Error $er) {
-            Error::throw($er);
+        if(!$this->where){
+            throw new Exception("Where Clause Not Found: {$this->sql}", 85006);
         }
         // Where SQL
         $where = $this->not ? "WHERE NOT" : "WHERE";
@@ -250,8 +236,14 @@ class Database Extends Driver
     // Hide Properties and Methods 
     public function __debugInfo()
     {
-        return [
-            'db-info'       =>  'Sorry This is Protected. Please Follow The Documentation.'
-        ];
+        $methods = [];
+        $existing = get_class_methods(Model::class);
+        foreach($existing as $key=>$method){
+            if(($method == 'password') || ($method == 'user') || ($method == 'dsn') || ($method == '__debugInfo') || ($method == '__construct')){
+                continue;
+            }
+            $methods[] = $method;
+        }
+        return $methods;
     }
 }

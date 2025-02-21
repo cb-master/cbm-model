@@ -8,7 +8,7 @@
 // Namespace
 namespace CBM\Model;
 
-use CBM\Handler\Error\Error;
+use Exception;
 
 class Driver
 {
@@ -34,7 +34,10 @@ class Driver
     protected static Bool $object = true;
 
     // Config Test
-    private static $triggered = false;
+    private static $config = false;
+
+    // Supported Drivrs
+    private static array $drivers = ['mariadb', 'mysql'];
 
     // Configure DB Model
     /**
@@ -42,43 +45,54 @@ class Driver
      */
     public static function config(array $config):void
     {
-        // Trigger Enable
-        self::$triggered = true;
+        // Check Database Driver Exist
+        if(!isset($config['driver'])){
+            throw new Exception("Database Driver Does Not Exist! Please Run Model::config(['driver'=>'mysql'])", 85012);
+        }
+        // Check Database Name Exist
+        if(!isset($config['name'])){
+            throw new Exception("Database Name Not Found. Please Run Model::config(['name'=>'db_name'])", 85015);
+        }
+        // Check Database User Exist
+        if(!isset($config['user'])){
+            throw new Exception("Database User Not Found. Please Run Model::config(['user'=>'db_user_name'])", 85015);
+        }
+        // Check Database Password Exist
+        if(!isset($config['password'])){
+            throw new Exception("Database User Password Not Found. Please Run Model::config(['password'=>'db_password'])", 85015);
+        }
         // Set Configuration
-        self::$driver   =   $config['driver'] ?? 'mysql';
         self::$host     =   $config['host'] ?? 'localhost';
-        self::$name     =   $config['name'] ?? 'sample';
+        self::$driver   =   $config['driver'];
+        self::$name     =   $config['name'];
         self::$port     =   (Int) ($config['port'] ?? 3306);
-        self::$user     =   $config['user'] ?? 'no_user';
-        self::$password =   $config['password'] ?? 'no_password';
+        self::$user     =   $config['user'];
+        self::$password =   $config['password'];
         self::$object   =   (isset($config['object']) && is_bool($config['object'])) ? $config['object'] : self::$object;
+
+        // Set Configuaration True
+        self::$config = true;
     }
 
     // Get Driver Class
     public static function driver():string
     {
         // Check Model Configured
-        try {
-            if(!self::$triggered){
-                throw new Error("Database Config Error. Run Model::config() First", 85014);
-            }
-        } catch (Error $e) {
-            Error::throw($e);
+        if(!self::$config){
+            throw new Exception("Database Config Error. Run Model::config() First", 85014);
         }
         // Check Driver Exist
-        try {
-            if(isset(self::$driver)){
-                $class = "\\CBM\\Model\\Driver\\".ucfirst(self::$driver);
-                if(!class_exists("\\CBM\\Model\\Driver\\".ucfirst(self::$driver))){
-                    throw new Error("Driver '".self::$driver."' Does Not Exist!", 85012);
-                }
-            }else{
-                throw new Error("Database Driver Does Not Exist!", 85012);
-            }
-        } catch (Error $e) {
-            Error::throw($e);
+        if(!isset(self::$driver)){
+            throw new Exception("Database Driver Does Not Exist!", 85012);
         }
-        return $class ?? '';
+        if(!in_array(self::$driver, self::$drivers)){
+            throw new Exception(sprintf("Unsupported Database Driver '%s'!", self::$driver), 85012);
+        }
+        $class = "\\CBM\\Model\\Driver\\".ucfirst(self::$driver);
+        if(!class_exists($class)){
+            throw new Exception("Driver '".self::$driver."' Does Not Exist!", 85012);
+        }
+        return $class;
     }
 
     // Database DSN

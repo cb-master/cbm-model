@@ -9,7 +9,7 @@
 namespace CBM\Model\Driver;
 
 use CBM\Model\Abstracts\AbstractDriver;
-use CBM\Handler\Error\Error;
+use Exception;
 
 class Mariadb Extends AbstractDriver
 {
@@ -21,18 +21,14 @@ class Mariadb Extends AbstractDriver
      */
     public static function dsn(string $host, string $name, int|string|bool|null $port = null):string
     {
-        try{
-            if(!$host){
-                throw new Error("Database Host Error", 85001);
-            }
-            if(!$name){
-                throw new Error("Database Name Error", 85003);
-            }
-            if(!$port){
-                throw new Error("Database Port Error", 85013);
-            }
-        }catch(Error $er){
-            Error::throw($er);
+        if(!$host){
+            throw new Exception("Mariadb Database Host Error", 85001);
+        }
+        if(!$name){
+            throw new Exception("Mariadb Database Name Error", 85003);
+        }
+        if(!$port){
+            throw new Exception("Mariadb Database Port Error", 85013);
         }
         return "mysql:host={$host}:{$port};dbname={$name}";
     }
@@ -43,7 +39,7 @@ class Mariadb Extends AbstractDriver
      */
     public static function user(?string $user):string|null
     {
-        return $user ? $user : null;
+        return $user;
     }
 
     // Database Password
@@ -52,6 +48,6 @@ class Mariadb Extends AbstractDriver
      */
     public static function password(?string $password):string|null
     {
-        return $password ? $password : null;
+        return $password;
     }
 }
