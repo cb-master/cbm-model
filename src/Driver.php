@@ -1,6 +1,6 @@
 <?php
 /**
- * Project: Laika MVC Framework
+ * Project: Cloud Bill Master Database Model
  * Author Name: Showket Ahmed
  * Author Email: riyadhtayf@gmail.com
  */

@@ -17,9 +17,9 @@ Cloud Bill Master Singleton Database Model is a PHP-based project that implement
 
 ## Installation
 Use Without Composer:
-Download the source code and copy it in your application directory. For manual installation, please remove the require vendor autoload file and use the db_model.php file from the repository.
+Download the source code and copy it in your application directory. For manual installation, please remove the require vendor autoload file and use the '*model.php*' file from the repository.
 ```php
-require_once('path/cbm-model/db_model.php');
+require_once('path/cbm-model/model.php');
 ```
 Install with composer:
 ```bash
