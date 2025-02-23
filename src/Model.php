@@ -8,9 +8,8 @@
 // Namespace
 namespace CBM\Model;
 
-use CBM\ModelHelper\ModelExceptions;
-use CBM\Handler\Error\Error;
-use PDOException;
+use Exception;
+use Throwable;
 
 class Model extends Database
 {
@@ -20,7 +19,7 @@ class Model extends Database
      */
     public static function table(string $table):object
     {
-        self::conn()->table = $table;
+        self::instance()->table = $table;
         return self::$instance;
     }
 
@@ -164,18 +163,19 @@ class Model extends Database
      */
     public function get(string $columns = '*'):array
     {
-        // Prepare Statement
-        $stmt = $this->pdo->prepare("SELECT {$columns} FROM {$this->makeSelectQuery()}");
-        
-        // Execute Statement
-        $stmt->execute($this->params);
-        // try {
-        // } catch (Error $er) {
-        //     Error::throw($er);
-        // }
-        // Fetch Data
-        $result = $stmt->fetchAll();
+        try{
+            // Prepare Statement
+            $stmt = self::pdo()->prepare("SELECT {$columns} FROM {$this->makeSelectQuery()}");
+            
+            // Execute Statement
+            $stmt->execute($this->params);
 
+            // Fetch Data
+            $result = $stmt->fetchAll();
+        }catch(Throwable $th) {
+            throw $th;
+        }
+        
         // Reset Statemment Helpers
         $this->reset();
         
@@ -189,12 +189,16 @@ class Model extends Database
      */
     public function single(string $columns = '*'):object|array
     {     
-        // Prepare Statement
-        $stmt = $this->pdo->prepare("SELECT {$columns} FROM {$this->makeSelectQuery()}");
-        // Execute Statement
-        $stmt->execute($this->params);
-        // Fetch Data
-        $result = $stmt->fetch();
+        try{
+            // Prepare Statement
+            $stmt = self::pdo()->prepare("SELECT {$columns} FROM {$this->makeSelectQuery()}");
+            // Execute Statement
+            $stmt->execute($this->params);
+            // Fetch Data
+            $result = $stmt->fetch();
+        }catch(Throwable $th) {
+            throw $th;
+        }
         
         // Reset Statemment Helpers
         $this->reset();
@@ -212,16 +216,21 @@ class Model extends Database
         $this->columns = array_keys($data);
         $this->placeholders = implode(', ', array_fill(0, count($data), '?'));
 
-        // Prepare Statement
-        $stmt = $this->pdo->prepare("INSERT INTO {$this->makeInsertQuery()}");
-        // Execute Statement
-        $stmt->execute(array_values($data));
+        try{
+            // Prepare Statement
+            $stmt = $this->pdo->prepare("INSERT INTO {$this->makeInsertQuery()}");
+            // Execute Statement
+            $stmt->execute(array_values($data));
 
+            // Get Last Insert ID
+            $result = (int) $this->pdo->lastInsertId();
+        }catch(Throwable $e){
+            throw $e;
+        }
         // Reset Statemment Helpers
         $this->reset();
-
         // Return
-        return (int) $this->pdo->lastInsertId();
+        return $result ?? 0;
     }
 
     // Replace Data
@@ -234,18 +243,24 @@ class Model extends Database
         $this->columns = array_keys($data);
         $this->placeholders = implode(', ', array_fill(0, count($data), '?'));
 
-        // Prepare Statement
-        $stmt = $this->pdo->prepare("REPLACE INTO {$this->makeInsertQuery()}");
-        // Execute Statement
-        $stmt->execute(array_values($data));
+        try{
+            // Prepare Statement
+            $stmt = $this->pdo->prepare("REPLACE INTO {$this->makeInsertQuery()}");
 
-        $result = $stmt->rowCount();
+            // Execute Statement
+            $stmt->execute(array_values($data));
+
+            // Count Effected Rows
+            $result = (int) $stmt->rowCount();
+        } catch (Throwable $th) {
+            throw $th;
+        }
 
         // Reset Statemment Helpers
         $this->reset();
         
         // Return
-        return (int) $result;
+        return $result ?? 0;
     }
 
     // Update Data Into Table
@@ -263,32 +278,43 @@ class Model extends Database
         // Get Params
         $params = array_merge($params, $this->params);
 
-        // Prepare Statement
-        $stmt = $this->pdo->prepare("UPDATE {$this->makeUpdateQuery()}");
-        // Execute Statement
-        $stmt->execute($params);
-        // Get Result
-        $result = (int) $stmt->rowCount();
+        try{
+            // Prepare Statement
+            $stmt = $this->pdo->prepare("UPDATE {$this->makeUpdateQuery()}");
+            // Execute Statement
+            $stmt->execute($params);
+            // Get Result
+            $result = (int) $stmt->rowCount();
+        }catch(Throwable $th) {
+            throw $th;
+        }
         // Reset Statemment Helpers
         $this->reset();
         // Return
-        return $result;
+        return $result ?? 0;
     }
 
     // Delete Column
     public function pop():int
     {
-        // Prepare Statement
-        $stmt = $this->pdo->prepare("DELETE FROM {$this->makePopQuery()}");
-        // Execute Statement
-        $stmt->execute($this->params);
-        $result = (int) $stmt->rowCount();
+        try{
+            // Prepare Statement
+            $stmt = $this->pdo->prepare("DELETE FROM {$this->makePopQuery()}");
+
+            // Execute Statement
+            $stmt->execute($this->params);
+
+            // Get Result
+            $result = (int) $stmt->rowCount();
+        }catch(Throwable $th) {
+            throw $th;
+        }
 
         // Reset Statemment Helpers
         $this->reset();
 
         // Return
-        return $result ?: 0;
+        return $result ?? 0;
     }
 
     // Generate UUID
@@ -310,16 +336,22 @@ class Model extends Database
      */
     public static function execute(string $query, array $params = []):int|array|object
     {
-        // Prepare Statement
-        $stmt = self::conn()->pdo->prepare($query);
-        // Execute Statement
-        $stmt->execute($params);
-        if(preg_match("/select /i", $query)){
-            return $stmt->fetchAll();
-        }elseif(preg_match("/insert /i", $query)){
-            return (int) self::conn()->pdo->lastInsertId();
+        try{
+            // Prepare Statement
+            $stmt = self::pdo()->prepare($query);
+
+            // Execute Statement
+            $stmt->execute($params);
+            if(preg_match("/select /i", $query)){
+                return $stmt->fetchAll();
+            }elseif(preg_match("/insert /i", $query)){
+                return (int) self::pdo()->lastInsertId();
+            }
+            return (int) $stmt->rowCount();
+        }catch(Throwable $th) {
+            throw $th;
         }
-        return (int) $stmt->rowCount();
+        return [];
     }
 
     #############################
@@ -344,15 +376,10 @@ class Model extends Database
      */
     public function primary(string $column):object
     {
-        try {
-            if(!$this->primary){
-                $this->primary = $column;
-            }else{
-                throw new Error("Multiple Primary Key is Not Allowed", 85010);
-            }
-        }catch(Error $er){
-            Error::throw($er);
+        if($this->primary){
+            throw new Exception("Multiple Primary Key is Not Allowed", 85010);
         }
+        $this->primary = $column;
         return $this;
     }
 
@@ -420,12 +447,8 @@ class Model extends Database
     public function create():bool
     {
         // Check Table & Columns are Exist
-        try {
-            if (!$this->table || !$this->columns) {
-                throw new Error("Table Name & Columns Must Be Defined.", 85006);
-            }
-        }catch(Error $er){
-            Error::throw($er);
+        if (!$this->table || !$this->columns) {
+            throw new Exception("Table Name & Columns Must Be Defined.", 85006);
         }
         // Create SQL Statement
         $this->sql = "CREATE TABLE `{$this->table}` (";
@@ -468,30 +491,29 @@ class Model extends Database
     public function exist()
     {
         // Check Table Method Exist
-        try {
-            if (!$this->table) {
-                throw new Error("Table Name Must Be Defined.", 85006);
-            }
-            // Reset Values 
-        }catch(Error $er){
-            Error::throw($er);
+        if (!$this->table) {
+            throw new Exception("Table Name Must Be Defined.", 85006);
         }
 
         $this->sql = "SHOW TABLES";
 
         // Prepare Statement
-        $stmt = self::conn()->pdo->prepare($this->sql);
-        $stmt->execute();
+        try{
+            $stmt = self::pdo()->prepare($this->sql);
+            $stmt->execute();
 
-        // Execute Statement
-        $result = $stmt->fetchAll();
+            // Execute Statement
+            $result = $stmt->fetchAll();
 
-        $result = json_decode(json_encode($result), true);
+            $result = json_decode(json_encode($result), true);
 
-        foreach($result as $res){
-            if(in_array($this->table, $res)){
-                return true;
+            foreach($result as $res){
+                if(in_array($this->table, $res)){
+                    return true;
+                }
             }
+        }catch(Throwable $th) {
+            throw $th;
         }
         
         // Reset Values

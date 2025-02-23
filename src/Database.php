@@ -10,6 +10,7 @@ namespace CBM\Model;
 
 use PDOException;
 use Exception;
+use Throwable;
 use PDO;
 
 class Database Extends Driver
@@ -101,32 +102,12 @@ class Database Extends Driver
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->pdo->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, false);
         }catch(PDOException $e){
-            throw new Exception($e->getMessage());
+            throw new PDOException($e->getMessage());
         }
     }
 
-    // Begin Transection
-    public static function beginTransaction()
-    {
-        return self::conn()->pdo->beginTransaction();
-    }
-
-    // Commit Transection
-    public static function commit()
-    {
-        return self::$instance->pdo->commit();
-    }
-
-    // Rollback Transection
-    public static function rollBack()
-    {
-        try {
-            self::$instance->pdo->rollBack();
-        }catch(PDOException $e){}
-    }
-
-    // Connection
-    public static function conn():Null|Object
+    // Instance
+    public static function instance():Object
     {
         if(!self::$instance)
         {
@@ -136,12 +117,48 @@ class Database Extends Driver
         return self::$instance;
     }
 
+    // PDO Instance
+    public static function pdo():Object
+    {
+        return self::instance()->pdo;
+    }
+
+    // Begin Transection
+    public static function beginTransaction()
+    {
+        try{
+            self::pdo()->beginTransaction();
+        }catch(Throwable $th){
+            throw $th;
+        }
+    }
+
+    // Commit Transection
+    public static function commit()
+    {
+        try{
+            self::pdo()->commit();
+        }catch(Throwable $th){
+            throw $th;
+        }
+    }
+
+    // Rollback Transection
+    public static function rollBack()
+    {
+        try {
+            self::pdo()->rollBack();
+        }catch(Throwable $th){
+            throw $th;
+        }
+    }
+
     // Make Select Query
     protected function makeSelectQuery():string
     {
         // Check $this->table Exist
         if(!$this->table){
-            throw new Exception("Table Name Not Found!", 85009);
+            throw new Exception("Table Name is Invalid or Blank!", 85009);
         }
 
         $this->sql = "{$this->table}";
@@ -168,6 +185,10 @@ class Database Extends Driver
     // Make Insert Query
     protected function makeInsertQuery():string
     {
+        // Check $this->table Exist
+        if(!$this->table){
+            throw new Exception("Table Name is Invalid or Blank!", 85009);
+        }
         $columns = implode(', ', array_values($this->columns));
         return "{$this->table} ({$columns}) VALUES ({$this->placeholders})";
     }
@@ -231,19 +252,5 @@ class Database Extends Driver
         $this->engine       =   'InnoDB';
         $this->charset      =   'utf8mb4';
         $this->collate      =   'utf8mb4_general_ci';
-    }
-
-    // Hide Properties and Methods 
-    public function __debugInfo()
-    {
-        $methods = [];
-        $existing = get_class_methods(Model::class);
-        foreach($existing as $key=>$method){
-            if(($method == 'password') || ($method == 'user') || ($method == 'dsn') || ($method == '__debugInfo') || ($method == '__construct')){
-                continue;
-            }
-            $methods[] = $method;
-        }
-        return $methods;
     }
 }
