@@ -318,12 +318,15 @@ class Model extends Database
     }
 
     // Generate UUID
-    public function uuid()
+    /**
+     * @param string $column Optional Argument. Default is 'uuid'
+     */
+    public function uuid(string $column = 'uuid')
     {
         $time = substr(str_replace('.', '', microtime(true)), -6);
         $uid = 'uuid-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.$time;
         // Check Already Exist & Return
-        if(self::table(self::$instance->table)->filter('uuid', '=', $uid)->single()){
+        if(self::table(self::$instance->table)->filter($column, '=', $uid)->single()){
             return self::uuid();
         }
         return strtoupper($uid);
