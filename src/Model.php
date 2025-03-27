@@ -402,7 +402,7 @@ class Model extends Database
      */
     public function index(string $column):object
     {
-        $this->index[] = "KEY({$column})";
+        $this->index[] = "INDEX({$column})";
         return $this;
     }
 
