@@ -6,8 +6,7 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "CBM\\Model\\": "src/",
-            "CBM\\ModelHelper\\": "helper/"
+            "CBM\\Model\\": "src/"
         }
     },
     "authors": [
