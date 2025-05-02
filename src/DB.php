@@ -499,7 +499,7 @@ class DB
     /**
      * @throws Exception Throws an exception if cloning is attempted
      */
-    public function __clone(){
+    private function __clone(){
         throw new Exception('Cloning is not allowed.');
     }
 
