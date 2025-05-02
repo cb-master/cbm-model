@@ -20,10 +20,12 @@ class DB
     protected ?int $limit = null;
     protected ?int $offset = null;
     protected array $having = [];
+    protected string $name = '';
 
-    private function __construct(PDO $pdo)
+    private function __construct(string $name = 'default')
     {
-        $this->pdo = $pdo;
+        $this->name = $name;
+        $this->pdo = ConnectionManager::get($this->name);
     }
 
     // Get Instance of DB
@@ -31,10 +33,10 @@ class DB
      * @param PDO $pdo Required PDO instance
      * @return object Returns the DB instance
      */
-    public static function getInstance(PDO $pdo):self
+    public static function getInstance(string $name = 'default'):self
     {
         if (self::$instance === null) {
-            self::$instance = new self($pdo);
+            self::$instance = new self($name);
         }
         return self::$instance;
     }
@@ -179,7 +181,7 @@ class DB
      */
     public function whereGroup(callable $callback, string $compare = 'AND'):object
     {
-        $newQuery = new self($this->pdo);
+        $newQuery = new self($this->name);
 
         $callback($newQuery);
 

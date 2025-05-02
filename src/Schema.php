@@ -13,16 +13,12 @@ class Schema
 
     // Set the PDO connection via ConnectionManager
     /**
-     * @param PDO|null $pdo Optional Argument
+     * @param string $name Optional Argument
      * @return void
      */
-    public static function setConnection(?PDO $pdo = null):void
+    public static function setConnection(string $name = 'default'):void
     {
-        // Fallback to default connection from ConnectionManager
-        if($pdo === null){
-            $pdo = ConnectionManager::get(); // Default to 'default' connection if not provided
-        }
-        self::$pdo = $pdo;
+        static::$pdo = ConnectionManager::get();
     }
 
     // Create a table using the schema blueprint

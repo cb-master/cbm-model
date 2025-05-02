@@ -59,13 +59,41 @@ class Blueprint
     // TEXT column
     /**
      * @param string $name Column name. Required Argument
-     * @param bool $nullable Whether the column is nullable. Default is false
+     * @param bool $null Whether the column is nullable. Default is false
      * @return object
      */
-    public function text(string $name, bool $nullable = false):object
+    public function text(string $name, bool $null = false):object
     {
-        $nullable = $nullable ? ' NULL' : ' NOT NULL';
-        $this->columns[] = "{$name} TEXT{$nullable}";
+        $null = $null ? ' NULL' : ' NOT NULL';
+        $this->columns[] = "{$name} TEXT{$null}";
+        return $this;
+    }
+
+    /**
+     * Add a MEDIUMTEXT column
+     *
+     * @param string $name Column name. Required.
+     * @param bool $null Whether the column is nullable. Default is false.
+     * @return self
+     */
+    public function mediumText(string $name, bool $null = false): self
+    {
+        $null = $null ? ' NULL' : ' NOT NULL';
+        $this->columns[] = "{$name} MEDIUMTEXT{$null}";
+        return $this;
+    }
+
+    /**
+     * Add a LONGTEXT column
+     *
+     * @param string $name Column name. Required.
+     * @param bool $null Whether the column is nullable. Default is false.
+     * @return self
+     */
+    public function longText(string $name, bool $null = false): self
+    {
+        $null = $null ? ' NULL' : ' NOT NULL';
+        $this->columns[] = "{$name} LONGTEXT{$null}";
         return $this;
     }
 
@@ -130,6 +158,37 @@ class Blueprint
         return $this;
     }
 
+    /**
+     * Add an ENUM column
+     *
+     * @param string $name Column name. Required.
+     * @param array $allowedValues List of allowed string values. Required.
+     * @param string|null $default Default value. Must be in allowed values or null.
+     * @param bool $null Whether the column is nullable. Default is false.
+     * @return self
+     */
+    public function enum(string $name, array $values, ?string $default = null, bool $null = false):self
+    {
+        if(empty($values)){
+            throw new InvalidArgumentException("ENUM column must have at least one allowed value.");
+        }
+
+        $quotedValues = array_map(fn($v) => "'".addslashes($v)."'", $values);
+        $enumList = implode(', ', $quotedValues);
+        $null = $null ? ' NULL' : ' NOT NULL';
+
+        $defaultClause = '';
+        if($default !== null){
+            if(!in_array($default, $values, true)){
+                throw new InvalidArgumentException("Default value '{$default}' is not in the allowed ENUM values.");
+            }
+            $defaultClause = " DEFAULT '" . addslashes($default) . "'";
+        }
+
+        $this->columns[] = "{$name} ENUM({$enumList}){$null}{$defaultClause}";
+        return $this;
+    }
+
     // DATETIME column
     /**
      * @param string $name Column name. Required Argument
@@ -169,12 +228,12 @@ class Blueprint
 
     // Primary Key
     /**
-     * @param array $columns Array of column names. Required Argument
+     * @param string $column Array of column names. Required Argument
      * @return object
      */
-    public function primary(array $columns):object
+    public function primary(string $column):object
     {
-        $this->primaryKeys = array_merge($this->primaryKeys, $columns);
+        $this->primaryKeys = array_merge($this->primaryKeys, [$column]);
         return $this;
     }
 

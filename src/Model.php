@@ -2,28 +2,20 @@
 
 namespace CBM\Model;
 
-use PDO;
-
 abstract class Model
 {
-    protected static PDO $pdo;
-    protected static string $table;
-    protected static string $id;
-    protected static string $name = 'default';
+    // Table Name
+    protected string $table;
 
-    public function __construct(?string $name = null)
-    {
-        self::setPDO($name);
-    }
+    // Table ID
+    protected string $id;
 
-    /**
-     * @param PDO $pdo Required parameter.
-     * @return void
-     */
-    public static function setPDO(?string $name = null):void
+    // Database Connection Name
+    protected string $name;
+
+    public function __construct(string $name = 'default')
     {
-        self::$name = $name ?: self::$name;
-        static::$pdo = ConnectionManager::get(self::$name);
+        $this->name = $name;
     }
 
     /**
@@ -32,9 +24,9 @@ abstract class Model
      * @param string $compare Optional parameter. Default is 'AND'
      * @return array
      */
-    public static function all(array $where = [], string $operator = '=', string $compare = 'AND'):array
+    public function all(array $where = [], string $operator = '=', string $compare = 'AND'):array
     {
-        $db = DB::getInstance(static::$pdo)->table(static::$table);
+        $db = DB::getInstance($this->name)->table($this->table);
         return $where ? $db->where($where, $operator, compare:$compare)->get() : $db->get();
     }
 
@@ -44,9 +36,9 @@ abstract class Model
      * @param string $compare Optional parameter. Default is 'OR'
      * @return array
      */
-    public static function find(array $where = [], string $operator = '=', string $compare = 'OR'):array
+    public function find(array $where = [], string $operator = '=', string $compare = 'OR'):array
     {
-        return DB::getInstance(static::$pdo)->table(static::$table)->where($where, $operator, compare:$compare)->get();
+        return DB::getInstance($this->name)->table($this->table)->where($where, $operator, compare:$compare)->get();
     }
 
     /**
@@ -54,9 +46,9 @@ abstract class Model
      * @param int|string $value Required parameter.
      * @return array
      */
-    public static function first(int|string $value):array
+    public function first(int|string $value):array
     {
-        return DB::getInstance(static::$pdo)->table(static::$table)->where(self::$id, '=', value:$value)->first();
+        return DB::getInstance($this->name)->table($this->table)->where($this->id, '=', value:$value)->first();
     }
 
     /**
@@ -65,27 +57,27 @@ abstract class Model
      * @param string $compare Optional parameter. Default is 'AND'
      * @return int
      */
-    public static function delete(array $where, string $operator = '=', string $compare = 'AND'):int
+    public function delete(array $where, string $operator = '=', string $compare = 'AND'):int
     {
-        return DB::getInstance(static::$pdo)->table(static::$table)->where($where, $operator, compare:$compare)->delete();
+        return DB::getInstance($this->name)->table($this->table)->where($where, $operator, compare:$compare)->delete();
     }
 
     /**
      * @param array $data Required parameter.
      * @return int
      */
-    public static function create(array $data):int
+    public function create(array $data):int
     {
-        return DB::getInstance(static::$pdo)->table(static::$table)->insert($data);
+        return DB::getInstance($this->name)->table($this->table)->insert($data);
     }
 
     /**
      * @param array $rows Required parameter.
      * @return int
      */
-    public static function createMany(array $rows):bool
+    public function createMany(array $rows):bool
     {
-        return DB::getInstance(static::$pdo)->table(static::$table)->insertMany($rows);
+        return DB::getInstance($this->name)->table($this->table)->insertMany($rows);
     }
 
     /**
@@ -93,8 +85,8 @@ abstract class Model
      * @param array $data Required parameter.
      * @return int
      */
-    public static function update(array $where, array $data):int
+    public function update(array $where, array $data):int
     {
-        return DB::getInstance(static::$pdo)->table(static::$table)->where($where)->update($data);
+        return DB::getInstance($this->name)->table($this->table)->where($where)->update($data);
     }
 }

@@ -66,7 +66,7 @@ class Config
         return new PDO($dsn, $username, $password, $options);
     }
 
-    public function __clone(){
+    protected function __clone(){
         throw new Exception('Cloning is not allowed.');
     }
     
