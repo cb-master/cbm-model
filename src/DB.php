@@ -283,6 +283,28 @@ class DB
         return $first;
     }
 
+    // Count Columns
+    /**
+     * @param string $column Optional Argument. Default is '*'
+     * @return int
+     */
+    public function count(string $column = '*'):int
+    {
+        $sql = "SELECT COUNT({$column}) as count FROM `{$this->table}`";
+
+        if(empty($this->wheres)){
+            throw new Exception('Where Clause is Missing!');
+        }
+        // $sql .= " WHERE " . implode(' AND ', array_column($this->wheres, 'condition'));
+        $sql .= " WHERE " . implode(' ', $this->wheres);
+        $stmt = $this->pdo->prepare($sql);
+        
+        $stmt->execute($this->bindings);
+        $result = $stmt->fetch();
+        $this->reset();
+        return (int) ($result['count'] ?? 0);
+    }
+
     // Insert a single row
     /**
      * @param array $data Required data to insert
