@@ -292,11 +292,9 @@ class DB
     {
         $sql = "SELECT COUNT({$column}) as count FROM `{$this->table}`";
 
-        if(empty($this->wheres)){
-            throw new Exception('Where Clause is Missing!');
+        if(!empty($this->wheres)){
+            $sql .= " WHERE " . implode(' ', $this->wheres);
         }
-        // $sql .= " WHERE " . implode(' AND ', array_column($this->wheres, 'condition'));
-        $sql .= " WHERE " . implode(' ', $this->wheres);
         $stmt = $this->pdo->prepare($sql);
         
         $stmt->execute($this->bindings);
