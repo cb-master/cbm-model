@@ -46,9 +46,9 @@ abstract class Model
      * @param int|string $value Required parameter.
      * @return array
      */
-    public function first(int|string $value):array
+    public function first(array $where):array
     {
-        return DB::getInstance($this->name)->table($this->table)->where($this->id, '=', value:$value)->first();
+        return DB::getInstance($this->name)->table($this->table)->where($where, compare:'OR')->first();
     }
 
     /**
@@ -88,5 +88,28 @@ abstract class Model
     public function update(array $where, array $data):int
     {
         return DB::getInstance($this->name)->table($this->table)->where($where)->update($data);
+    }
+
+    // Generate UUID
+    /**
+     * @param string $column Optional Argument. Default is 'uuid'
+     * @return string
+     */
+    public function uuid(string $column = 'uuid'):string
+    {
+        $time = substr(str_replace('.', '', microtime(true)), -6);
+        $uid = 'uuid-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.$time;
+        // Check Already Exist & Return
+        if(DB::getInstance($this->name)->table($this->table)->where($column, '=', $uid)->first()){
+            return $this->uuid($column);
+        }
+        return $uid;
+    }
+
+    // Count Column
+    public function count(string $column, array $where = []): int
+    {
+        return $where ? DB::getInstance()->table($this->table)->where($where)->count($column):
+                        DB::getInstance()->table($this->table)->count($column);
     }
 }
