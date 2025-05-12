@@ -112,7 +112,7 @@ class DB
     {
         if (is_array($column)) {
             foreach ($column as $col => $val) {
-                $this->addWhere("{$col} = ?", [$val], strtoupper($compare));
+                $this->addWhere("{$col} {$operator} ?", [$val], strtoupper($compare));
             }
         } else {
             $this->addWhere("{$column} {$operator} ?", [$value], strtoupper($compare));
@@ -122,14 +122,15 @@ class DB
 
     // Set Where Like
     /**
-     * @param string $column Required column name
-     * @param string $pattern Required pattern to match
+     * @param array $where Required column name
      * @param string $compare Optional comparison type (AND, OR)
      * @return object Returns the DB instance
      */
-    public function whereLike(string $column, string $pattern, string $compare = 'AND'):object
+    public function whereLike(array $where, string $compare = 'AND'):object
     {
-        $this->addWhere("{$column} LIKE ?", [$pattern], strtoupper($compare));
+        foreach($where as $col => $val){
+            $this->addWhere("{$col} LIKE ?", [$val], strtoupper($compare));
+        }
         return $this;
     }
 
