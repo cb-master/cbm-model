@@ -92,11 +92,12 @@ abstract class Model
 
     // Generate UUID
     /**
-     * @param string $column Optional Argument. Default is 'uuid'
+     * @param ?string $column Optional Argument. Default is null
      * @return string
      */
-    public function uuid(string $column = 'uuid'):string
+    public function uuid(?string $column = null):string
     {
+        $column = $column ?: $this->uuid;
         $time = substr(str_replace('.', '', microtime(true)), -6);
         $uid = 'uuid-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.$time;
         // Check Already Exist & Return
