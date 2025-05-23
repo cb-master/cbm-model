@@ -112,7 +112,7 @@ class DB
     {
         if (is_array($column)) {
             foreach ($column as $col => $val) {
-                $this->addWhere("{$col} = ?", [$val], strtoupper($compare));
+                $this->addWhere("{$col} {$operator} ?", [$val], strtoupper($compare));
             }
         } else {
             $this->addWhere("{$column} {$operator} ?", [$value], strtoupper($compare));
@@ -122,14 +122,15 @@ class DB
 
     // Set Where Like
     /**
-     * @param string $column Required column name
-     * @param string $pattern Required pattern to match
+     * @param array $where Required column name
      * @param string $compare Optional comparison type (AND, OR)
      * @return object Returns the DB instance
      */
-    public function whereLike(string $column, string $pattern, string $compare = 'AND'):object
+    public function whereLike(array $where, string $compare = 'AND'):object
     {
-        $this->addWhere("{$column} LIKE ?", [$pattern], strtoupper($compare));
+        foreach($where as $col => $val){
+            $this->addWhere("{$col} LIKE ?", [$val], strtoupper($compare));
+        }
         return $this;
     }
 
@@ -283,12 +284,12 @@ class DB
         return $first;
     }
 
-    // Count Data
+    // Count Columns
     /**
      * @param string $column Optional Argument. Default is '*'
-     * @return int Returns the count of rows
+     * @return int
      */
-    public function count(string $column = '*'): int
+    public function count(string $column = '*'):int
     {
         $this->columns = "COUNT({$column}) as count";
         $stmt = $this->pdo->prepare($this->buildSelectSQL());
@@ -298,7 +299,6 @@ class DB
         $this->reset();
         return (int) ($result['count'] ?? 0);
     }
-
     // Insert a single row
     /**
      * @param array $data Required data to insert
