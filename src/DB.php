@@ -299,6 +299,7 @@ class DB
         $this->reset();
         return (int) ($result['count'] ?? 0);
     }
+    
     // Insert a single row
     /**
      * @param array $data Required data to insert
