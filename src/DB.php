@@ -285,7 +285,7 @@ class DB
 
     // Count Data
     /**
-     * @param string $column Required column name to count
+     * @param string $column Optional Argument. Default is '*'
      * @return int Returns the count of rows
      */
     public function count(string $column = '*'): int
