@@ -10,6 +10,9 @@ abstract class Model
     // Table ID
     protected string $id;
 
+    // Table UUID
+    protected string $uuid;
+
     // Database Connection Name
     protected string $name;
 
@@ -108,9 +111,10 @@ abstract class Model
     }
 
     // Count Column
-    public function count(string $column, array $where = []): int
+    public function count(string $column = null, array $where = [], string $operator = '=', string $compare = 'AND'): int
     {
-        return $where ? DB::getInstance()->table($this->table)->where($where)->count($column):
+        $column = $column ?: $this->id;
+        return $where ? DB::getInstance()->table($this->table)->where($where, $operator, null, $compare)->count($column):
                         DB::getInstance()->table($this->table)->count($column);
     }
 }
