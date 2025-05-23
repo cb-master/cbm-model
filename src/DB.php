@@ -112,7 +112,7 @@ class DB
     {
         if (is_array($column)) {
             foreach ($column as $col => $val) {
-                $this->addWhere("{$col} {$operator} ?", [$val], strtoupper($compare));
+                $this->addWhere("{$col} = ?", [$val], strtoupper($compare));
             }
         } else {
             $this->addWhere("{$column} {$operator} ?", [$value], strtoupper($compare));
@@ -122,15 +122,14 @@ class DB
 
     // Set Where Like
     /**
-     * @param array $where Required column name
+     * @param string $column Required column name
+     * @param string $pattern Required pattern to match
      * @param string $compare Optional comparison type (AND, OR)
      * @return object Returns the DB instance
      */
-    public function whereLike(array $where, string $compare = 'AND'):object
+    public function whereLike(string $column, string $pattern, string $compare = 'AND'):object
     {
-        foreach($where as $col => $val){
-            $this->addWhere("{$col} LIKE ?", [$val], strtoupper($compare));
-        }
+        $this->addWhere("{$column} LIKE ?", [$pattern], strtoupper($compare));
         return $this;
     }
 
@@ -284,22 +283,18 @@ class DB
         return $first;
     }
 
-    // Count Columns
+    // Count Data
     /**
-     * @param string $column Optional Argument. Default is '*'
-     * @return int
+     * @param string $column Required column name to count
+     * @return int Returns the count of rows
      */
-    public function count(string $column = '*'):int
+    public function count(string $column = '*'): int
     {
-        $sql = "SELECT COUNT({$column}) as count FROM `{$this->table}`";
-
-        if(!empty($this->wheres)){
-            $sql .= " WHERE " . implode(' ', $this->wheres);
-        }
-        $stmt = $this->pdo->prepare($sql);
-        
+        $this->columns = "COUNT({$column}) as count";
+        $stmt = $this->pdo->prepare($this->buildSelectSQL());
         $stmt->execute($this->bindings);
         $result = $stmt->fetch();
+        // Reset Query Builder
         $this->reset();
         return (int) ($result['count'] ?? 0);
     }
