@@ -33,7 +33,7 @@ class DB
      * @param PDO $pdo Required PDO instance
      * @return object Returns the DB instance
      */
-    public static function getInstance(string $name = 'default'):self
+    public static function getInstance(string $name = 'default'): self
     {
         if (self::$instance === null) {
             self::$instance = new self($name);
@@ -46,7 +46,7 @@ class DB
      * @param string $table Required table name
      * @return object Returns the DB instance
      */
-    public function table(string $table):object
+    public function table(string $table): object
     {
         $this->reset();
         $this->table = $table;
@@ -57,7 +57,7 @@ class DB
     /**
      * @return void
      */
-    protected function reset():void
+    protected function reset(): void
     {
         $this->columns = '*';
         $this->joins = [];
@@ -75,7 +75,7 @@ class DB
      * @param string $columns Required columns to select
      * @return object Returns the DB instance
      */
-    public function select(string $columns = '*'):object
+    public function select(string $columns = '*'): object
     {
         $this->columns = $columns;
         return $this;
@@ -90,7 +90,7 @@ class DB
      * @param string $type Optional join type (LEFT, RIGHT, INNER)
      * @return object Returns the DB instance
      */
-    public function join(string $table, string $first, string $operator, string $second, string $type = 'LEFT'):object
+    public function join(string $table, string $first, string $operator, string $second, string $type = 'LEFT'): object
     {
         $type = strtoupper($type);
         if (!in_array($type, ['LEFT', 'RIGHT', 'INNER'])) {
@@ -108,7 +108,7 @@ class DB
      * @param string $compare Optional comparison type (AND, OR)
      * @return object Returns the DB instance
      */
-    public function where(array|string $column, string $operator = '=', mixed $value = null, string $compare = 'AND'):object
+    public function where(array|string $column, string $operator = '=', mixed $value = null, string $compare = 'AND'): object
     {
         if (is_array($column)) {
             foreach ($column as $col => $val) {
@@ -126,7 +126,7 @@ class DB
      * @param string $compare Optional comparison type (AND, OR)
      * @return object Returns the DB instance
      */
-    public function whereLike(array $where, string $compare = 'AND'):object
+    public function whereLike(array $where, string $compare = 'AND'): object
     {
         foreach($where as $col => $val){
             $this->addWhere("{$col} LIKE ?", [$val], strtoupper($compare));
@@ -141,7 +141,7 @@ class DB
      * @param string $compare Optional comparison type (AND, OR)
      * @return object Returns the DB instance
      */
-    public function whereIn(string $column, array $values, string $compare = 'AND'):object
+    public function whereIn(string $column, array $values, string $compare = 'AND'): object
     {
         $placeholders = implode(',', array_fill(0, count($values), '?'));
         $this->addWhere("{$column} IN ({$placeholders})", $values, strtoupper($compare));
@@ -154,7 +154,7 @@ class DB
      * @param string $compare Optional comparison type (AND, OR)
      * @return object Returns the DB instance
      */
-    public function whereNull(string $column, string $compare = 'AND'):object
+    public function whereNull(string $column, string $compare = 'AND'): object
     {
         $this->addWhere("{$column} IS NULL", [], strtoupper($compare));
         return $this;
@@ -168,7 +168,7 @@ class DB
      * @param string $compare Optional comparison type (AND, OR)
      * @return object Returns the DB instance
      */
-    public function whereBetween(string $column, mixed $value1, mixed $value2, string $compare = 'AND'):object
+    public function whereBetween(string $column, mixed $value1, mixed $value2, string $compare = 'AND'): object
     {
         $this->addWhere("{$column} BETWEEN ? AND ?", [$value1, $value2], strtoupper($compare));
         return $this;
@@ -180,7 +180,7 @@ class DB
      * @param string $compare Optional comparison type (AND, OR)
      * @return object Returns the DB instance
      */
-    public function whereGroup(callable $callback, string $compare = 'AND'):object
+    public function whereGroup(callable $callback, string $compare = 'AND'): object
     {
         $newQuery = new self($this->name);
 
@@ -203,7 +203,7 @@ class DB
      * @param string ...$columns Required columns to group by
      * @return object Returns the DB instance
      */
-    public function groupBy(string ...$columns):object
+    public function groupBy(string ...$columns): object
     {
         $this->groupBy = $columns;
         return $this;
@@ -216,7 +216,7 @@ class DB
      * @param mixed $value Required value
      * @return object Returns the DB instance
      */
-    public function having(string $column, string $operator, mixed $value):object
+    public function having(string $column, string $operator, mixed $value): object
     {
         $this->having[] = "{$column} {$operator} ?";
         $this->bindings[] = $value;
@@ -229,31 +229,33 @@ class DB
      * @param string $direction Optional direction (ASC, DESC)
      * @return object Returns the DB instance
      */
-    public function orderBy(string $column, string $direction = 'ASC'):object
+    public function orderBy(string $column, string $direction = 'ASC'): object
     {
+        $column = strtoupper($column);
         $this->orderBy[] = "{$column} {$direction}";
         return $this;
     }
 
     // Set Limit
     /**
-     * @param int $limit Required limit
+     * @param int|string $limit Required limit
      * @return object Returns the DB instance
      */
-    public function limit(int $limit):object
+    public function limit(int|string $limit): object
     {
-        $this->limit = $limit;
+        $this->limit = (int) $limit;
         return $this;
     }
 
     // Set Offset
     /**
-     * @param int $offset Required offset
+     * @param int|string $page Optional Argument. Default is Page Number 1
      * @return object Returns the DB instance
      */
-    public function offset(int $offset):object
+    public function offset(int|string $page = 1): object
     {
-        $this->offset = $offset;
+        $offset = ((int)$page - 1) * (int) $this->limit;
+        $this->offset = ($offset < 0) ? 0 : $offset;
         return $this;
     }
 
@@ -261,7 +263,7 @@ class DB
     /**
      * @return array Returns the results as an array
      */
-    public function get():array
+    public function get(): array
     {
         $sql = $this->buildSelectSQL();
         $stmt = $this->pdo->prepare($sql);
@@ -276,7 +278,7 @@ class DB
     /**
      * @return array Returns the first result as an array
      */
-    public function first():array
+    public function first(): array
     {
         $this->limit(1);
         $result = $this->get();
@@ -289,7 +291,7 @@ class DB
      * @param string $column Optional Argument. Default is '*'
      * @return int
      */
-    public function count(string $column = '*'):int
+    public function count(string $column = '*'): int
     {
         $this->columns = "COUNT({$column}) as count";
         $stmt = $this->pdo->prepare($this->buildSelectSQL());
@@ -305,7 +307,7 @@ class DB
      * @param array $data Required data to insert
      * @return int Returns the last inserted ID
      */
-    public function insert(array $data):int
+    public function insert(array $data): int
     {
         $columns = array_keys($data);
         $placeholders = array_fill(0, count($columns), '?');
@@ -324,7 +326,7 @@ class DB
      * @param array $rows Required rows to insert
      * @return bool Returns true on success, false on failure
      */
-    public function insertMany(array $rows):bool
+    public function insertMany(array $rows): bool
     {
         if (empty($rows)) {
             throw new InvalidArgumentException("Cannot insert empty rows.");
@@ -361,7 +363,7 @@ class DB
      * @param callable $callback Required callback function to process each chunk
      * @return void
      */
-    public function chunk(int $size, callable $callback):void
+    public function chunk(int $size, callable $callback): void
     {
         $offset = 0;
 
@@ -391,7 +393,7 @@ class DB
      * @param array $data Required data to update
      * @return bool Returns true on success, false on failure
      */
-    public function update(array $data):int
+    public function update(array $data): int
     {
         if(empty($this->wheres)) {
             throw new InvalidArgumentException("No WHERE clause provided for UPDATE operation.");
@@ -421,7 +423,7 @@ class DB
     /**
      * @return int Returns the number of affected rows
      */
-    public function delete():int
+    public function delete(): int
     {
         $sql = "DELETE FROM {$this->table}";
         if(empty($this->wheres)) {
@@ -445,7 +447,7 @@ class DB
      * @param string $compare Optional comparison type (AND, OR)
      * @return void
      */
-    private function addWhere(string $condition, array $bindings = [], string $compare = 'AND'):void
+    private function addWhere(string $condition, array $bindings = [], string $compare = 'AND'): void
     {
         $compare = strtoupper($compare);
         $prefix = empty($this->wheres) ? '' : ($compare === 'OR' ? 'OR ' : 'AND ');
@@ -457,7 +459,7 @@ class DB
     /**
      * @return string Returns the built SQL query
      */
-    private function buildSelectSQL():string
+    private function buildSelectSQL(): string
     {
         $sql = "SELECT {$this->columns} FROM {$this->table}";
 
@@ -496,7 +498,7 @@ class DB
     /**
      * @return string Returns the SQL query with bindings
      */
-    public function debugSql():string
+    public function debugSql(): string
     {
         $sql = $this->buildSelectSQL();
         $bindings = $this->bindings;
