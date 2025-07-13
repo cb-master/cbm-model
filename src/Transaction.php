@@ -7,7 +7,13 @@ use Closure;
 
 class Transaction Extends DB
 {
-    public static function run(Closure $callback, string $connection_name = 'default'): mixed
+    // Run Transaction
+    /**
+     * @param Closure $callback Required Argument.
+     * @param string $connection_name Optional Argument. Default is 'default'
+     * @return array Example ['error'=>false, 'message'=>'Anything']
+     */
+    public static function run(Closure $callback, string $connection_name = 'default'): array
     {
         try{
             $db = self::getInstance($connection_name);
@@ -16,10 +22,16 @@ class Transaction Extends DB
 
             $db->pdo->commit();
 
-            return $result;
+            return [
+                'error' =>  false,
+                'message'=> $result
+            ];
         }catch(PDOException $e){
             $db->pdo->rollBack();
-            throw $e;
+            return [
+                'error'=>true,
+                'message'=>$e->getMessage()
+            ];
         }
     }
 }
