@@ -2,15 +2,15 @@
 
 namespace CBM\Model;
 
-use PDO;
+use PDOException;
 use Closure;
-use Exception;
 
 class Transaction
 {
-    public static function run(PDO $pdo, Closure $callback): mixed
+    public static function run(Closure $callback, string $connection_name = 'default'): mixed
     {
         try{
+            $pdo = ConnectionManager::get($connection_name);
             $pdo->beginTransaction();
 
             $result = $callback($pdo);
@@ -18,7 +18,7 @@ class Transaction
             $pdo->commit();
 
             return $result;
-        }catch (Exception $e){
+        }catch(PDOException $e){
             $pdo->rollBack();
             throw $e;
         }
