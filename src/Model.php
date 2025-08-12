@@ -4,21 +4,25 @@ namespace CBM\Model;
 
 abstract class Model
 {
+    // Database Object
+    protected Db $db;
+
     // Table Name
     protected string $table;
 
-    // Table ID
+    // Table Primary Column ID Name
     protected string $id;
 
-    // Table UUID
+    // Table UUID Column Name
     protected string $uuid;
 
     // Database Connection Name
-    protected string $name;
+    // protected string $name;
 
     public function __construct(string $name = 'default')
     {
-        $this->name = $name;
+        $this->db = DB::getInstance($name);
+        // $this->name = $name;
     }
 
     /**
@@ -29,19 +33,20 @@ abstract class Model
      */
     public function all(array $where = [], string $operator = '=', string $compare = 'AND'):array
     {
-        $db = DB::getInstance($this->name)->table($this->table);
-        return $where ? $db->where($where, $operator, compare:$compare)->get() : $db->get();
+        // $db = DB::getInstance($this->name)->table($this->table);
+        return $where ? $this->db->table($this->table)->where($where, $operator, compare:$compare)->get() :
+                        $this->db->table($this->table)->get();
     }
 
     /**
-     * @param array $where Optional parameter. Default is []
+     * @param array $where Required parameter.
      * @param string $operator Optional parameter. Default is '='
      * @param string $compare Optional parameter. Default is 'OR'
      * @return array
      */
-    public function find(array $where = [], string $operator = '=', string $compare = 'OR'):array
+    public function find(array $where, string $operator = '=', string $compare = 'OR'):array
     {
-        return DB::getInstance($this->name)->table($this->table)->where($where, $operator, compare:$compare)->get();
+        return $this->db->table($this->table)->where($where, $operator, compare:$compare)->get();
     }
 
     /**
@@ -51,7 +56,7 @@ abstract class Model
      */
     public function first(array $where):array
     {
-        return DB::getInstance($this->name)->table($this->table)->where($where, compare:'OR')->first();
+        return $this->db->table($this->table)->where($where, compare:'OR')->first();
     }
 
     /**
@@ -62,25 +67,25 @@ abstract class Model
      */
     public function delete(array $where, string $operator = '=', string $compare = 'AND'):int
     {
-        return DB::getInstance($this->name)->table($this->table)->where($where, $operator, compare:$compare)->delete();
+        return $this->db->table($this->table)->where($where, $operator, compare:$compare)->delete();
     }
 
     /**
      * @param array $data Required parameter.
      * @return int
      */
-    public function create(array $data):int
+    public function insert(array $data):int
     {
-        return DB::getInstance($this->name)->table($this->table)->insert($data);
+        return $this->db->table($this->table)->insert($data);
     }
 
     /**
      * @param array $rows Required parameter.
      * @return int
      */
-    public function createMany(array $rows):bool
+    public function insertMany(array $rows):bool
     {
-        return DB::getInstance($this->name)->table($this->table)->insertMany($rows);
+        return $this->db->table($this->table)->insertMany($rows);
     }
 
     /**
@@ -90,7 +95,7 @@ abstract class Model
      */
     public function update(array $where, array $data):int
     {
-        return DB::getInstance($this->name)->table($this->table)->where($where)->update($data);
+        return $this->db->table($this->table)->where($where)->update($data);
     }
 
     // Generate UUID
@@ -104,7 +109,7 @@ abstract class Model
         $time = substr(str_replace('.', '', microtime(true)), -6);
         $uid = 'uuid-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.bin2hex(random_bytes(3)).'-'.$time;
         // Check Already Exist & Return
-        if(DB::getInstance($this->name)->table($this->table)->where($column, '=', $uid)->first()){
+        if($this->db->table($this->table)->where($column, '=', $uid)->first()){
             return $this->uuid($column);
         }
         return $uid;
@@ -114,7 +119,7 @@ abstract class Model
     public function count(string $column = null, array $where = [], string $operator = '=', string $compare = 'AND'): int
     {
         $column = $column ?: $this->id;
-        return $where ? DB::getInstance()->table($this->table)->where($where, $operator, null, $compare)->count($column):
-                        DB::getInstance()->table($this->table)->count($column);
+        return $where ? $this->db->table($this->table)->where($where, $operator, null, $compare)->count($column):
+                        $this->db->table($this->table)->count($column);
     }
 }
