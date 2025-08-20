@@ -233,7 +233,7 @@ class Blueprint
      */
     public function primary(string $column):object
     {
-        $this->primaryKeys = array_merge($this->primaryKeys, [$column]);
+        $this->primaryKeys = [$column];
         return $this;
     }
 
@@ -252,10 +252,10 @@ class Blueprint
     // Index Key
     /**
      * @param string $column Column name. Required Argument
-     * @param int $length Length of the index key. Default is null
+     * @param ?int $length Length of the index key. Default is null
      * @return object
      */
-    public function index(string $column, int $length = null):object
+    public function index(string $column, ?int $length = null):object
     {
         $this->indexes[] = [$column . ($length ? "({$length})" : '')];
         return $this;
@@ -303,7 +303,6 @@ class Blueprint
 
         // Primary Key
         $sql .= !empty($this->primaryKeys) ? ", PRIMARY KEY (" . implode(", ", $this->primaryKeys) . ")" : '';
-
         // Unique Keys
         // $uniqueKeysSQL = '';
         foreach ($this->uniqueKeys as $uniqueColumns) {
