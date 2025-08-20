@@ -16,13 +16,11 @@ abstract class Model
     // Table UUID Column Name
     protected string $uuid;
 
-    // Database Connection Name
     // protected string $name;
 
     public function __construct(string $name = 'default')
     {
         $this->db = DB::getInstance($name);
-        // $this->name = $name;
     }
 
     /**
