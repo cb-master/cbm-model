@@ -46,7 +46,7 @@ class Config
         $driverClass = __NAMESPACE__ . '\\Drivers\\' . ucfirst($driver);
 
         if (!class_exists($driverClass)) {
-            throw new InvalidArgumentException("Driver class '{$driverClass}' does not exist.");
+            throw new InvalidArgumentException("Invalid Driver: '{$driver}'");
         }
 
         $driverInstance = new $driverClass();
@@ -60,10 +60,9 @@ class Config
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         ];
+        $options += $defaultOptions;
 
-        $options = $options + $defaultOptions;
-
-        return new PDO($dsn, $username, $password, $options);
+        return new PDO($dsn, $username, $password, $defaultOptions);
     }
 
     private function __clone(){

@@ -18,7 +18,7 @@ class Schema
      */
     public static function setConnection(string $name = 'default'):void
     {
-        static::$pdo = ConnectionManager::get();
+        static::$pdo = ConnectionManager::get($name);
     }
 
     // Create a table using the schema blueprint
