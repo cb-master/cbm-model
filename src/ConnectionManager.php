@@ -9,7 +9,7 @@ class ConnectionManager
 {
     private static array $connections = [];
 
-    public static function add(array $config, string $name = 'default'):void
+    public static function add(array $config, string $name = 'default'): void
     {
         if (isset(self::$connections[$name])) {
             throw new InvalidArgumentException("Connection '{$name}' already exists.");
@@ -19,7 +19,7 @@ class ConnectionManager
         self::$connections[$name] = $pdo->getPDO();
     }
 
-    public static function get(string $name = 'default'):PDO
+    public static function get(string $name = 'default'): PDO
     {
         if (!isset(self::$connections[$name])) {
             throw new InvalidArgumentException("Connection '{$name}' does not exist.");
