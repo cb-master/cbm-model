@@ -1,11 +1,4 @@
 <?php
-/**
- * Laika Database Model
- * Author: Showket Ahmed
- * Email: riyadhtayf@gmail.com
- * This file is part of the Laika PHP MVC Framework.
- * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
- */
 
 namespace CBM\Model;
 
@@ -15,26 +8,13 @@ use InvalidArgumentException;
 
 class Config
 {
-    private static ?self $instance = null;
     protected array $config;
     protected PDO $pdo;
 
-    private function __construct(array $config)
+    public function __construct(array $config)
     {
         $this->config = $config;
         $this->pdo = $this->createPDO();
-    }
-
-    public static function makeInstance(array $config = []):self
-    {
-        if(self::$instance === null){
-            if(empty($config)){
-                throw new InvalidArgumentException('Configuration required for first initialization.');
-            }
-            self::$instance = new self($config);
-        }
-
-        return self::$instance;
     }
 
     public function getPDO():PDO

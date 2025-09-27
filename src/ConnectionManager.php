@@ -1,11 +1,4 @@
 <?php
-/**
- * Laika Database Model
- * Author: Showket Ahmed
- * Email: riyadhtayf@gmail.com
- * This file is part of the Laika PHP MVC Framework.
- * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
- */
 
 namespace CBM\Model;
 
@@ -18,17 +11,17 @@ class ConnectionManager
 
     public static function add(array $config, string $name = 'default'): void
     {
-        if (isset(self::$connections[$name])) {
-            throw new InvalidArgumentException("Connection '{$name}' already exists.");
+        // Make PDO Instance
+        if (!self::has($name)) {
+            $pdo = new Config($config);
+            self::$connections[$name] = $pdo->getPDO();
         }
-        
-        $pdo = Config::makeInstance($config);
-        self::$connections[$name] = $pdo->getPDO();
+        return;
     }
 
     public static function get(string $name = 'default'): PDO
     {
-        if (!isset(self::$connections[$name])) {
+        if (!self::has($name)) {
             throw new InvalidArgumentException("Connection '{$name}' does not exist.");
         }
 
