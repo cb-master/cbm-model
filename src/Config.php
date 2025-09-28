@@ -51,12 +51,4 @@ class Config
 
         return new PDO($dsn, $username, $password, $defaultOptions);
     }
-
-    private function __clone(){
-        throw new Exception('Cloning is not allowed.');
-    }
-    
-    public function __wakeup(){
-        throw new Exception('Unserializing is not allowed.');
-    }
 }
