@@ -5,16 +5,16 @@ namespace CBM\Model;
 abstract class Model
 {
     // Database Object
-    protected Db $db;
+    public Db $db;
 
     // Table Name
-    protected string $table;
+    public string $table;
 
     // Table Primary Column ID Name
-    protected string $id;
+    public string $id;
 
     // Table UUID Column Name
-    protected string $uuid;
+    public string $uuid;
 
     // protected string $name;
 
@@ -48,13 +48,14 @@ abstract class Model
     }
 
     /**
-     * @param string $column Required parameter.
-     * @param int|string $value Required parameter.
+     * @param array $where Required parameter.
+     * @param string $operator Optional parameter. Default is '='
+     * @param string $compare Optional parameter. Default is 'OR'
      * @return array
      */
-    public function first(array $where):array
+    public function first(array $where, string $operator = '=', string $compare = 'AND'):array
     {
-        return $this->db->table($this->table)->where($where, compare:'OR')->first();
+        return $this->db->table($this->table)->where($where, $operator, compare:$compare)->first();
     }
 
     /**
