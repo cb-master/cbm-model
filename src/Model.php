@@ -5,16 +5,16 @@ namespace CBM\Model;
 abstract class Model
 {
     // Database Object
-    protected Db $db;
+    public Db $db;
 
     // Table Name
-    protected string $table;
+    public string $table;
 
     // Table Primary Column ID Name
-    protected string $id;
+    public string $id;
 
     // Table UUID Column Name
-    protected string $uuid;
+    public string $uuid;
 
     // protected string $name;
 
