@@ -55,7 +55,7 @@ abstract class Model
      */
     public function first(array $where, string $operator = '=', string $compare = 'AND'):array
     {
-        return $this->db->table($this->table)->where($where, $operator, compare:'AND')->first();
+        return $this->db->table($this->table)->where($where, $operator, compare:$compare)->first();
     }
 
     /**
